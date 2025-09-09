@@ -8,6 +8,8 @@ import extractionRoutes from "./routes/extractionRoutes";
 import reportRoutes from "./routes/reportRoutes";
 import exchangeRateRoutes from "./routes/exchangeRateRoutes";
 import { errorHandler } from "./middlewares/errorMiddleware";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger';
 import { findUserByUsernameAndPassword } from "./services/userService";
 import connectDB from "./config/database";
 import jwt from "jsonwebtoken";
@@ -59,6 +61,8 @@ app.post("/login", async (req, res) => {
 });
 
 app.use(errorHandler);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

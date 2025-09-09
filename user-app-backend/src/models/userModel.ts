@@ -1,5 +1,42 @@
 import { Schema, model, Document } from "mongoose";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - name
+ *         - username
+ *         - email
+ *         - password
+ *         - role
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: The auto-generated id of the user.
+ *         name:
+ *           type: string
+ *           description: The name of the user.
+ *         username:
+ *           type: string
+ *           description: The username for login.
+ *         email:
+ *           type: string
+ *           description: The email of the user.
+ *         role:
+ *           type: string
+ *           description: The role of the user.
+ *           enum: [role_admin, role_manager, role_employee]
+ *       example:
+ *         _id: 60d0fe4f5311236168a109ca
+ *         name: John Doe
+ *         username: johndoe
+ *         email: johndoe@example.com
+ *         role: role_employee
+ */
+
 export enum Role {
   Admin = "role_admin",
   Manager = "role_manager",
