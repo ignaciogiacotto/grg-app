@@ -1,0 +1,47 @@
+import axios from 'axios';
+
+const API_URL = 'http://localhost:4000/api/notes';
+
+const getAuthToken = () => {
+  return localStorage.getItem('token');
+};
+
+export const getNotes = async () => {
+  const token = getAuthToken();
+  const response = await axios.get(API_URL, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const createNote = async (note: any) => {
+  const token = getAuthToken();
+  const response = await axios.post(API_URL, note, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const updateNote = async (id: string, note: any) => {
+  const token = getAuthToken();
+  const response = await axios.put(`${API_URL}/${id}`, note, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const deleteNote = async (id: string) => {
+  const token = getAuthToken();
+  await axios.delete(`${API_URL}/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+const noteService = {
+    getNotes,
+    createNote,
+    updateNote,
+    deleteNote,
+};
+
+export default noteService;

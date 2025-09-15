@@ -78,6 +78,9 @@ export const Navbar = () => {
                 <NavLink className="nav-link" to="/extractions">
                   Retiros
                 </NavLink>
+                <NavLink className="nav-link" to="/notes">
+                  Notas
+                </NavLink>
               </>
             )}
           </Nav>

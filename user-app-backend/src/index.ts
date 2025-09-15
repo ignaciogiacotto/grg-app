@@ -7,6 +7,8 @@ import providerRoutes from "./routes/providerRoutes";
 import extractionRoutes from "./routes/extractionRoutes";
 import reportRoutes from "./routes/reportRoutes";
 import exchangeRateRoutes from "./routes/exchangeRateRoutes";
+import noteRoutes from "./routes/noteRoutes";
+import tagRoutes from "./routes/tagRoutes";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger';
@@ -33,6 +35,8 @@ app.use("/api/providers", providerRoutes);
 app.use("/api/extractions", extractionRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/exchange-rates", exchangeRateRoutes);
+app.use("/api/notes", noteRoutes);
+app.use("/api/tags", tagRoutes);
 
 
 app.post("/login", async (req, res) => {

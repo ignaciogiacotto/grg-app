@@ -13,6 +13,7 @@ import Providers from "../components/providers/Providers";
 import { CalculatorPage } from "../components/calculator/CalculatorPage";
 import Extractions from "../components/extractions/Extractions";
 import Dashboard from "../components/dashboard/Dashboard";
+import NotesPage from "../components/notes/NotesPage";
 
 export const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
           {
             path: "/extractions",
             element: <Extractions />,
+          },
+          {
+            path: "/notes",
+            element: <NotesPage />,
           },
         ],
       },

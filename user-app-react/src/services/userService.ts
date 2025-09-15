@@ -15,9 +15,9 @@ const getAuthToken = () => {
   return localStorage.getItem("token");
 };
 
-export const getUsers = async (page: number) => {
+export const getUsers = async (page: number, pageSize: number = 5) => {
   const token = getAuthToken();
-  const response = await axios.get(`${API_URL}?page=${page}`, {
+  const response = await axios.get(`${API_URL}?page=${page}&size=${pageSize}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
