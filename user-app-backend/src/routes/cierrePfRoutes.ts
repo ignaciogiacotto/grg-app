@@ -5,6 +5,7 @@ import { Role } from "../models/userModel";
 
 const router = Router();
 
+// Cierre PF routes
 router.post(
   "/",
   protect,
@@ -17,6 +18,34 @@ router.get(
   authorize(Role.Admin, Role.Manager, Role.Employee),
   cierrePfController.getCierresPf
 );
+// Boletas Especiales routes
+// Deben estar antes de /:id para que "boletas" no se tome como un id
+router.get(
+  "/boletas",
+  protect,
+  authorize(Role.Admin, Role.Manager, Role.Employee),
+  cierrePfController.getBoletasEspeciales
+);
+router.post(
+  "/boletas",
+  protect,
+  authorize(Role.Admin, Role.Manager),
+  cierrePfController.createBoletaEspecial
+);
+router.put(
+  "/boletas/:id",
+  protect,
+  authorize(Role.Admin, Role.Manager),
+  cierrePfController.updateBoletaEspecial
+);
+router.delete(
+  "/boletas/:id",
+  protect,
+  authorize(Role.Admin, Role.Manager),
+  cierrePfController.deleteBoletaEspecial
+);
+
+// Cierre PF routes by ID
 router.get(
   "/:id",
   protect,
@@ -32,7 +61,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize(Role.Admin, Role.Manager, Role.Employee),
+authorize(Role.Admin, Role.Manager, Role.Employee),
   cierrePfController.deleteCierrePf
 );
 

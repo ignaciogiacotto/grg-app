@@ -1,40 +1,34 @@
 import { Schema, model, Document } from "mongoose";
 
+interface IBoletaEspecial {
+  name: string;
+  quantity: number;
+  value: number;
+}
+
 export interface ICierrePf extends Document {
   date: Date;
-  western: number;
-  mp: number;
-  liga: number;
-  santander: number;
-  giros: number;
-  uala: number;
-  naranjaX: number;
-  nsaAgencia: number;
-  brubank: number;
-  direcTv: number;
-  extracciones: number;
+  boletasEspeciales: IBoletaEspecial[];
+  cantidadTotalBoletas: number;
   recargas: number;
-  descFacturas: number;
-  cantTotalFacturas: number;
+  recargasSubtotal: number;
+  westernUnionQuantity: number;
   totalGanancia: number;
 }
 
 const cierrePfSchema = new Schema<ICierrePf>({
   date: { type: Date, default: Date.now },
-  western: { type: Number, default: 0 },
-  mp: { type: Number, default: 0 },
-  liga: { type: Number, default: 0 },
-  santander: { type: Number, default: 0 },
-  giros: { type: Number, default: 0 },
-  uala: { type: Number, default: 0 },
-  naranjaX: { type: Number, default: 0 },
-  nsaAgencia: { type: Number, default: 0 },
-  brubank: { type: Number, default: 0 },
-  direcTv: { type: Number, default: 0 },
-  extracciones: { type: Number, default: 0 },
+  boletasEspeciales: [
+    {
+      name: { type: String, required: true },
+      quantity: { type: Number, required: true },
+      value: { type: Number, required: true },
+    },
+  ],
+  cantidadTotalBoletas: { type: Number, required: true, default: 0 },
   recargas: { type: Number, default: 0 },
-  descFacturas: { type: Number, default: 0 },
-  cantTotalFacturas: { type: Number, default: 0 },
+  recargasSubtotal: { type: Number, default: 0 },
+  westernUnionQuantity: { type: Number, default: 0 },
   totalGanancia: { type: Number, default: 0 },
 });
 
