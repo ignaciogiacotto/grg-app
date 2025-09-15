@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Form, Table } from "react-bootstrap";
-import {
-  getBoletasEspeciales,
-  createBoletaEspecial,
-  updateBoletaEspecial,
-  deleteBoletaEspecial,
+import cierrePfService, {
   IBoletaEspecialDB,
 } from "../../services/cierrePfService";
 import Swal from "sweetalert2";
@@ -33,7 +29,7 @@ const BoletasEspecialesModal = ({
 
   const fetchBoletas = async () => {
     try {
-      const data = await getBoletasEspeciales();
+      const data = await cierrePfService.getBoletasEspeciales();
       setBoletas(data);
     } catch (error) {
       console.error("Error fetching boletas especiales:", error);
@@ -42,7 +38,7 @@ const BoletasEspecialesModal = ({
 
   const handleCreate = async () => {
     try {
-      await createBoletaEspecial({
+      await cierrePfService.createBoletaEspecial({
         name: newBoletaName,
         value: newBoletaValue,
       });
@@ -59,7 +55,7 @@ const BoletasEspecialesModal = ({
   const handleUpdate = async () => {
     if (editingBoleta) {
       try {
-        await updateBoletaEspecial(editingBoleta._id, {
+        await cierrePfService.updateBoletaEspecial(editingBoleta._id, {
           name: editingBoleta.name,
           value: editingBoleta.value,
         });
@@ -85,7 +81,7 @@ const BoletasEspecialesModal = ({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await deleteBoletaEspecial(id);
+          await cierrePfService.deleteBoletaEspecial(id);
           fetchBoletas();
           Swal.fire("Borrada!", "La boleta ha sido borrada.", "success");
         } catch (error) {

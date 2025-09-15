@@ -1,37 +1,47 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useCierrePfForm } from "../../hooks/useCierrePfForm";
+import { useCierrePfForm, IBoletaFormItem } from "../../hooks/useCierrePfForm";
 import BoletasEspecialesModal from "./BoletasEspecialesModal";
+import { BoletaEspecialRow } from "./BoletaEspecialRow";
+import { WesternUnionRow } from "./WesternUnionRow";
+import { TotalFacturasRow } from "./TotalFacturasRow";
+import { RecargasRow } from "./RecargasRow";
 
 const CierrePf = () => {
   const { id } = useParams<{ id: string }>();
   const [showBoletasModal, setShowBoletasModal] = useState(false);
-  const {
-    items,
-    descFacturas,
-    totalGanancia,
-    recargasSubtotal,
-    recargasSubtotalEditable,
-    setRecargasSubtotal,
-    setRecargasSubtotalEditable,
-    setRecargas,
-    setCantidadTotalBoletas,
-    setWesternUnionQuantity,
-    westernUnionValue,
-    setWesternUnionValue,
-    westernUnionValueEditable,
-    setWesternUnionValueEditable,
-    handleUpdateWesternUnionValue,
-    valorFacturaNormal,
-    setValorFacturaNormal,
-    valorFacturaNormalEditable,
-    setValorFacturaNormalEditable,
-    handleUpdateValorFacturaNormal,
-    handleSubmit,
-    handleBoletaChange,
-    toggleBoletaEdit,
-    refetchBoletas,
-  } = useCierrePfForm(id);
+  const { state, dispatch, items, handleSubmit, handleUpdatePersistentValue } =
+    useCierrePfForm(id);
+  const { descFacturas, totalGanancia } = state;
+
+  const renderRow = (item: IBoletaFormItem) => {
+    switch (item.type) {
+      case "western-union":
+        return (
+          <WesternUnionRow
+            item={item}
+            state={state}
+            dispatch={dispatch}
+            handleUpdatePersistentValue={handleUpdatePersistentValue}
+          />
+        );
+      case "total-facturas":
+        return (
+          <TotalFacturasRow
+            item={item}
+            state={state}
+            dispatch={dispatch}
+            handleUpdatePersistentValue={handleUpdatePersistentValue}
+          />
+        );
+      case "recargas":
+        return <RecargasRow item={item} state={state} dispatch={dispatch} />;
+      case "especial":
+        return <BoletaEspecialRow item={item} dispatch={dispatch} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="container mt-1">
@@ -56,164 +66,7 @@ const CierrePf = () => {
               <th>Subtotal</th>
             </tr>
           </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.id}>
-                <td>{item.label}</td>
-                <td>
-                  <input
-                    type="number"
-                    className="form-control form-control-sm text-end"
-                    style={{ maxWidth: "100px" }}
-                    value={item.quantity}
-                    onChange={(e) => {
-                      const value = Number(e.target.value);
-                      if (item.type === "total-facturas") {
-                        setCantidadTotalBoletas(value);
-                      } else if (item.type === "recargas") {
-                        setRecargas(value);
-                      } else if (item.type === "western-union") {
-                        setWesternUnionQuantity(value);
-                      } else {
-                        handleBoletaChange(item.id, "quantity", value);
-                      }
-                    }}
-                    onFocus={(e) => e.target.select()}
-                  />
-                </td>
-                <td>
-                  {item.type === "western-union" ? (
-                    <div
-                      className="input-group input-group-sm"
-                      style={{ maxWidth: "120px" }}>
-                      <input
-                        type="number"
-                        className="form-control text-end"
-                        value={westernUnionValue}
-                        readOnly={!westernUnionValueEditable}
-                        onChange={(e) =>
-                          setWesternUnionValue(Number(e.target.value))
-                        }
-                        onFocus={(e) => e.target.select()}
-                      />
-                      <button
-                        className="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        onClick={() => {
-                          if (westernUnionValueEditable) {
-                            handleUpdateWesternUnionValue();
-                          } else {
-                            setWesternUnionValueEditable(true);
-                          }
-                        }}>
-                        {westernUnionValueEditable ? (
-                          <i className="bi bi-floppy"></i>
-                        ) : (
-                          <i className="bi bi-pencil-square"></i>
-                        )}
-                      </button>
-                    </div>
-                  ) : item.type === "especial" ? (
-                    <div
-                      className="input-group input-group-sm"
-                      style={{ maxWidth: "120px" }}>
-                      <input
-                        type="number"
-                        className="form-control text-end"
-                        value={item.value}
-                        readOnly={!item.editable}
-                        onChange={(e) =>
-                          handleBoletaChange(
-                            item.id,
-                            "value",
-                            Number(e.target.value)
-                          )
-                        }
-                        onFocus={(e) => e.target.select()}
-                      />
-                      <button
-                        className="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        onClick={() => toggleBoletaEdit(item.id)}>
-                        {item.editable ? (
-                          <i className="bi bi-floppy"></i>
-                        ) : (
-                          <i className="bi bi-pencil-square"></i>
-                        )}
-                      </button>
-                    </div>
-                  ) : item.type === "total-facturas" ? (
-                    <div
-                      className="input-group input-group-sm"
-                      style={{ maxWidth: "120px" }}>
-                      <input
-                        type="number"
-                        className="form-control text-end"
-                        value={valorFacturaNormal}
-                        readOnly={!valorFacturaNormalEditable}
-                        onChange={(e) =>
-                          setValorFacturaNormal(Number(e.target.value))
-                        }
-                        onFocus={(e) => e.target.select()}
-                      />
-                      <button
-                        className="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        onClick={() => {
-                          if (valorFacturaNormalEditable) {
-                            handleUpdateValorFacturaNormal();
-                          } else {
-                            setValorFacturaNormalEditable(true);
-                          }
-                        }}>
-                        {valorFacturaNormalEditable ? (
-                          <i className="bi bi-floppy"></i>
-                        ) : (
-                          <i className="bi bi-pencil-square"></i>
-                        )}
-                      </button>
-                    </div>
-                  ) : item.type === "recargas" ? (
-                    <div
-                      className="input-group input-group-sm"
-                      style={{ maxWidth: "120px" }}>
-                      <input
-                        type="number"
-                        className="form-control text-end"
-                        value={recargasSubtotal}
-                        readOnly={!recargasSubtotalEditable}
-                        onChange={(e) =>
-                          setRecargasSubtotal(Number(e.target.value))
-                        }
-                        onFocus={(e) => e.target.select()}
-                      />
-                      <button
-                        className="btn btn-outline-secondary btn-sm"
-                        type="button"
-                        onClick={() =>
-                          setRecargasSubtotalEditable(!recargasSubtotalEditable)
-                        }>
-                        {recargasSubtotalEditable ? (
-                          <i className="bi bi-floppy"></i>
-                        ) : (
-                          <i className="bi bi-pencil-square"></i>
-                        )}
-                      </button>
-                    </div>
-                  ) : null}
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    className="form-control form-control-sm text-end"
-                    readOnly
-                    value={item.subtotal}
-                    style={{ maxWidth: "120px" }}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
+          <tbody>{items.map(renderRow)}</tbody>
         </table>
 
         <div className="d-flex flex-wrap gap-2 mt-1 align-items-center justify-content-between">
@@ -237,7 +90,7 @@ const CierrePf = () => {
         show={showBoletasModal}
         onHide={() => {
           setShowBoletasModal(false);
-          refetchBoletas();
+          dispatch({ type: "REFETCH_BOLETAS" });
         }}
       />
     </div>

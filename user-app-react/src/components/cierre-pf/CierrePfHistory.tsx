@@ -1,9 +1,6 @@
 import { Link } from "react-router-dom";
 import { useDataFetcher } from "../../hooks/useDataFetcher";
-import {
-  getCierresPf,
-  deleteCierrePf,
-} from "../../services/cierrePfService";
+import cierrePfService from "../../services/cierrePfService";
 
 interface ICierrePf {
   _id: string;
@@ -13,8 +10,8 @@ interface ICierrePf {
 
 const CierrePfHistory = () => {
   const { data: history, handleDelete } = useDataFetcher<ICierrePf>(
-    getCierresPf,
-    deleteCierrePf
+    cierrePfService.getCierresPf,
+    cierrePfService.deleteCierrePf
   );
 
   return (

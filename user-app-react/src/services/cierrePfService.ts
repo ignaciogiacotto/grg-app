@@ -31,7 +31,7 @@ const getAuthToken = () => {
 };
 
 // CierrePf services
-export const getCierresPf = async () => {
+const getCierresPf = async () => {
   const token = getAuthToken();
   const response = await axios.get(API_URL, {
     headers: {
@@ -41,7 +41,7 @@ export const getCierresPf = async () => {
   return response.data;
 };
 
-export const getCierrePfById = async (id: string) => {
+const getCierrePfById = async (id: string) => {
   const token = getAuthToken();
   const response = await axios.get(`${API_URL}/${id}`, {
     headers: {
@@ -51,7 +51,7 @@ export const getCierrePfById = async (id: string) => {
   return response.data;
 };
 
-export const createCierrePf = async (cierre: ICierrePf) => {
+const createCierrePf = async (cierre: ICierrePf) => {
   const token = getAuthToken();
   const response = await axios.post(API_URL, cierre, {
     headers: {
@@ -61,7 +61,7 @@ export const createCierrePf = async (cierre: ICierrePf) => {
   return response.data;
 };
 
-export const updateCierrePf = async (id: string, cierre: ICierrePf) => {
+const updateCierrePf = async (id: string, cierre: ICierrePf) => {
   const token = getAuthToken();
   const response = await axios.put(`${API_URL}/${id}`, cierre, {
     headers: {
@@ -71,7 +71,7 @@ export const updateCierrePf = async (id: string, cierre: ICierrePf) => {
   return response.data;
 };
 
-export const deleteCierrePf = async (id: string) => {
+const deleteCierrePf = async (id: string) => {
   const token = getAuthToken();
   const response = await axios.delete(`${API_URL}/${id}`, {
     headers: {
@@ -84,7 +84,7 @@ export const deleteCierrePf = async (id: string) => {
 // BoletaEspecial services
 const BOLETAS_API_URL = `${API_URL}/boletas`;
 
-export const getBoletasEspeciales = async (): Promise<IBoletaEspecialDB[]> => {
+const getBoletasEspeciales = async (): Promise<IBoletaEspecialDB[]> => {
   const token = getAuthToken();
   const response = await axios.get(BOLETAS_API_URL, {
     headers: { Authorization: `Bearer ${token}` },
@@ -92,7 +92,7 @@ export const getBoletasEspeciales = async (): Promise<IBoletaEspecialDB[]> => {
   return response.data;
 };
 
-export const createBoletaEspecial = async (boleta: {
+const createBoletaEspecial = async (boleta: {
   name: string;
   value: number;
 }): Promise<IBoletaEspecialDB> => {
@@ -103,7 +103,7 @@ export const createBoletaEspecial = async (boleta: {
   return response.data;
 };
 
-export const updateBoletaEspecial = async (
+const updateBoletaEspecial = async (
   id: string,
   boleta: { name: string; value: number }
 ): Promise<IBoletaEspecialDB> => {
@@ -114,9 +114,23 @@ export const updateBoletaEspecial = async (
   return response.data;
 };
 
-export const deleteBoletaEspecial = async (id: string) => {
+const deleteBoletaEspecial = async (id: string) => {
   const token = getAuthToken();
   await axios.delete(`${BOLETAS_API_URL}/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+const cierrePfService = {
+  getCierresPf,
+  getCierrePfById,
+  createCierrePf,
+  updateCierrePf,
+  deleteCierrePf,
+  getBoletasEspeciales,
+  createBoletaEspecial,
+  updateBoletaEspecial,
+  deleteBoletaEspecial,
+};
+
+export default cierrePfService;

@@ -1,17 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import {
-  getCierrePfById,
-  createCierrePf,
-  updateCierrePf,
-  getBoletasEspeciales,
-  createBoletaEspecial,
-  updateBoletaEspecial,
+import cierrePfService, {
   IBoletaEspecialCierre,
 } from "../services/cierrePfService";
 
-interface IBoletaFormItem {
+// Interfaces
+export interface IBoletaFormItem {
   id: string;
   label: string;
   quantity: number;
@@ -21,121 +16,176 @@ interface IBoletaFormItem {
   subtotal: number | string;
 }
 
+interface IState {
+  boletas: Omit<IBoletaFormItem, "subtotal" | "type">[];
+  boletasVersion: number;
+  cantidadTotalBoletas: number;
+  recargas: number;
+  recargasSubtotal: number;
+  recargasSubtotalEditable: boolean;
+  westernUnionQuantity: number;
+  westernUnionValue: number;
+  westernUnionValueId: string | null;
+  westernUnionValueEditable: boolean;
+  valorFacturaNormal: number;
+  valorFacturaNormalId: string | null;
+  valorFacturaNormalEditable: boolean;
+  descFacturas: number;
+  totalGanancia: number;
+}
+
+// Reducer
+type Action =
+  | { type: "SET_STATE"; payload: Partial<IState> }
+  | { type: "SET_FIELD"; payload: { field: keyof IState; value: any } }
+  | {
+      type: "UPDATE_BOLETA";
+      payload: { id: string; field: "quantity" | "value"; value: number };
+    }
+  | { type: "TOGGLE_BOLETA_EDIT"; payload: string }
+  | { type: "REFETCH_BOLETAS" };
+
+const initialState: IState = {
+  boletas: [],
+  boletasVersion: 0,
+  cantidadTotalBoletas: 0,
+  recargas: 0,
+  recargasSubtotal: 0,
+  recargasSubtotalEditable: false,
+  westernUnionQuantity: 0,
+  westernUnionValue: 0,
+  westernUnionValueId: null,
+  westernUnionValueEditable: false,
+  valorFacturaNormal: 100,
+  valorFacturaNormalId: null,
+  valorFacturaNormalEditable: false,
+  descFacturas: 0,
+  totalGanancia: 0,
+};
+
+const reducer = (state: IState, action: Action): IState => {
+  switch (action.type) {
+    case "SET_STATE":
+      return { ...state, ...action.payload };
+    case "SET_FIELD":
+      return { ...state, [action.payload.field]: action.payload.value };
+    case "UPDATE_BOLETA":
+      return {
+        ...state,
+        boletas: state.boletas.map((b) =>
+          b.id === action.payload.id
+            ? { ...b, [action.payload.field]: action.payload.value }
+            : b
+        ),
+      };
+    case "TOGGLE_BOLETA_EDIT":
+      return {
+        ...state,
+        boletas: state.boletas.map((b) =>
+          b.id === action.payload ? { ...b, editable: !b.editable } : b
+        ),
+      };
+    case "REFETCH_BOLETAS":
+      return { ...state, boletasVersion: state.boletasVersion + 1 };
+    default:
+      return state;
+  }
+};
+
 export const useCierrePfForm = (id?: string) => {
   const navigate = useNavigate();
-  const [boletas, setBoletas] = useState<
-    Omit<IBoletaFormItem, "subtotal" | "type">[]
-  >([]);
-  const [boletasVersion, setBoletasVersion] = useState(0);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  const [cantidadTotalBoletas, setCantidadTotalBoletas] = useState(0);
-  const [recargas, setRecargas] = useState(0);
-  const [recargasSubtotal, setRecargasSubtotal] = useState(0);
-  const [recargasSubtotalEditable, setRecargasSubtotalEditable] =
-    useState(false);
+  const {
+    boletas,
+    boletasVersion,
+    cantidadTotalBoletas,
+    recargas,
+    recargasSubtotal,
+    westernUnionQuantity,
+    westernUnionValue,
+    valorFacturaNormal,
+    totalGanancia,
+  } = state;
 
-  // Western Union is special. Its VALUE is persistent (like a boleta especial),
-  // but its QUANTITY is transactional (like a recarga).
-  const [westernUnionQuantity, setWesternUnionQuantity] = useState(0);
-  const [westernUnionValue, setWesternUnionValue] = useState(0);
-  const [westernUnionValueId, setWesternUnionValueId] = useState<string | null>(
-    null
-  );
-  const [westernUnionValueEditable, setWesternUnionValueEditable] =
-    useState(false);
-
-  const [valorFacturaNormal, setValorFacturaNormal] = useState(100); // Default to 100
-  const [valorFacturaNormalId, setValorFacturaNormalId] = useState<
-    string | null
-  >(null);
-  const [valorFacturaNormalEditable, setValorFacturaNormalEditable] =
-    useState(false);
-
-  const [descFacturas, setDescFacturas] = useState(0);
-  const [totalGanancia, setTotalGanancia] = useState(0);
-
-  const refetchBoletas = () => {
-    setBoletasVersion((prev) => prev + 1);
-  };
-
+  // Initial data fetch
   useEffect(() => {
     const fetchAndSetData = async () => {
       try {
-        // First, always get the definitions of all special boletas
-        const boletasDB = await getBoletasEspeciales();
+        const boletasDB = await cierrePfService.getBoletasEspeciales();
 
-        // Find and set persistent WU value
         const wuBoleta = boletasDB.find(
           (b) => b.name === "Western Union Value"
         );
-        if (wuBoleta) {
-          setWesternUnionValue(wuBoleta.value);
-          setWesternUnionValueId(wuBoleta._id);
-        } else {
-          const newWuBoleta = await createBoletaEspecial({
-            name: "Western Union Value",
-            value: 0,
-          });
-          setWesternUnionValue(newWuBoleta.value);
-          setWesternUnionValueId(newWuBoleta._id);
-        }
-
-        // Find and set persistent VFN value
         const vfnBoleta = boletasDB.find(
           (b) => b.name === "Valor Factura Normal"
         );
-        if (vfnBoleta) {
-          setValorFacturaNormal(vfnBoleta.value);
-          setValorFacturaNormalId(vfnBoleta._id);
-        } else {
-          const newVfnBoleta = await createBoletaEspecial({
+
+        let finalWuBoleta = wuBoleta;
+        if (!wuBoleta) {
+          finalWuBoleta = await cierrePfService.createBoletaEspecial({
+            name: "Western Union Value",
+            value: 0,
+          });
+        }
+
+        let finalVfnBoleta = vfnBoleta;
+        if (!vfnBoleta) {
+          finalVfnBoleta = await cierrePfService.createBoletaEspecial({
             name: "Valor Factura Normal",
             value: 100,
           });
-          setValorFacturaNormal(newVfnBoleta.value);
-          setValorFacturaNormalId(newVfnBoleta._id);
         }
 
-        // Filter out the special values to get the list of actual boletas
-        const otherBoletas = boletasDB.filter(
-          (b) =>
-            b.name !== "Western Union Value" &&
-            b.name !== "Valor Factura Normal"
-        );
-        const initialBoletas = otherBoletas.map((b) => ({
-          id: b._id,
-          label: b.name,
-          quantity: 0,
-          value: b.value,
-          editable: false,
-        }));
+        const otherBoletas = boletasDB
+          .filter(
+            (b) =>
+              b.name !== "Western Union Value" &&
+              b.name !== "Valor Factura Normal"
+          )
+          .map((b) => ({
+            id: b._id,
+            label: b.name,
+            quantity: 0,
+            value: b.value,
+            editable: false,
+          }));
+
+        const initialStateUpdate: Partial<IState> = {
+          westernUnionValue: finalWuBoleta!.value,
+          westernUnionValueId: finalWuBoleta!._id,
+          valorFacturaNormal: finalVfnBoleta!.value,
+          valorFacturaNormalId: finalVfnBoleta!._id,
+        };
 
         if (id) {
-          // EDIT MODE: Fetch the specific Cierre and populate quantities
-          const cierreData = await getCierrePfById(id);
-
+          const cierreData = await cierrePfService.getCierrePfById(id);
           cierreData.boletasEspeciales.forEach((be: IBoletaEspecialCierre) => {
-            const boletaIndex = initialBoletas.findIndex(
+            const boletaIndex = otherBoletas.findIndex(
               (b) => b.label === be.name
             );
             if (boletaIndex !== -1) {
-              initialBoletas[boletaIndex].quantity = be.quantity;
+              otherBoletas[boletaIndex].quantity = be.quantity;
             }
           });
 
-          setBoletas(initialBoletas);
-          setCantidadTotalBoletas(cierreData.cantidadTotalBoletas || 0);
-          setRecargas(Number(cierreData.recargas) || 0);
-          setRecargasSubtotal(Number(cierreData.recargasSubtotal) || 0);
-          setWesternUnionQuantity(Number(cierreData.westernUnionQuantity) || 0);
+          initialStateUpdate.boletas = otherBoletas;
+          initialStateUpdate.cantidadTotalBoletas =
+            cierreData.cantidadTotalBoletas || 0;
+          initialStateUpdate.recargas = Number(cierreData.recargas) || 0;
+          initialStateUpdate.recargasSubtotal =
+            Number(cierreData.recargasSubtotal) || 0;
+          initialStateUpdate.westernUnionQuantity =
+            Number(cierreData.westernUnionQuantity) || 0;
         } else {
-          // CREATE MODE: Reset transactional fields to 0
-          setBoletas(initialBoletas); // Boletas with 0 quantity
-          setCantidadTotalBoletas(0);
-          setRecargas(0);
-          setRecargasSubtotal(0);
-          setWesternUnionQuantity(0);
+          initialStateUpdate.boletas = otherBoletas;
+          initialStateUpdate.cantidadTotalBoletas = 0;
+          initialStateUpdate.recargas = 0;
+          initialStateUpdate.recargasSubtotal = 0;
+          initialStateUpdate.westernUnionQuantity = 0;
         }
+
+        dispatch({ type: "SET_STATE", payload: initialStateUpdate });
       } catch (error) {
         console.error("Error initializing form data:", error);
       }
@@ -144,6 +194,7 @@ export const useCierrePfForm = (id?: string) => {
     fetchAndSetData();
   }, [id, boletasVersion]);
 
+  // Calculations
   useEffect(() => {
     const cantidadBoletasEspeciales = boletas.reduce(
       (acc, boleta) => acc + boleta.quantity,
@@ -155,26 +206,32 @@ export const useCierrePfForm = (id?: string) => {
         boleta.quantity * (typeof boleta.value === "number" ? boleta.value : 0),
       0
     );
-
     const cantidadBoletasNormales = Math.max(
       0,
       cantidadTotalBoletas - (cantidadBoletasEspeciales + recargas)
     );
     const subtotalBoletasNormales =
       cantidadBoletasNormales * valorFacturaNormal;
-
-    // --- ÚNICO CAMBIO DE LÓGICA AQUÍ ---
-    setDescFacturas(cantidadBoletasEspeciales + recargas);
-    // -----------------------------------
-
     const subtotalWesternUnion = westernUnionQuantity * westernUnionValue;
 
-    setTotalGanancia(
-      subtotalBoletasNormales +
-        subtotalBoletasEspeciales +
-        recargasSubtotal +
-        subtotalWesternUnion
-    );
+    dispatch({
+      type: "SET_FIELD",
+      payload: {
+        field: "descFacturas",
+        value: cantidadBoletasEspeciales + recargas,
+      },
+    });
+    dispatch({
+      type: "SET_FIELD",
+      payload: {
+        field: "totalGanancia",
+        value:
+          subtotalBoletasNormales +
+          subtotalBoletasEspeciales +
+          recargasSubtotal +
+          subtotalWesternUnion,
+      },
+    });
   }, [
     boletas,
     cantidadTotalBoletas,
@@ -185,108 +242,68 @@ export const useCierrePfForm = (id?: string) => {
     valorFacturaNormal,
   ]);
 
+  // Handlers
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    Swal.fire({
+    const result = await Swal.fire({
       title: id ? "¿Actualizar cierre?" : "¿Guardar cierre?",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: id ? "Sí, actualizar" : "Sí, guardar",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        const cierreData = {
-          boletasEspeciales: boletas.map((b) => ({
-            name: b.label,
-            quantity: b.quantity,
-            value: typeof b.value === "number" ? b.value : 0,
-          })),
-          cantidadTotalBoletas,
-          recargas,
-          recargasSubtotal,
-          westernUnionQuantity,
-          totalGanancia,
-        };
-
-        try {
-          if (id) {
-            await updateCierrePf(id, cierreData);
-          } else {
-            await createCierrePf(cierreData);
-          }
-          Swal.fire(
-            "¡Guardado!",
-            `Cierre ${id ? "actualizado" : "guardado"} con éxito.`,
-            "success"
-          );
-          navigate("/dashboard");
-        } catch (error) {
-          console.error("Error guardando el cierre:", error);
-          Swal.fire("Error", "No se pudo guardar el cierre.", "error");
-        }
-      }
     });
-  };
 
-  const handleUpdateWesternUnionValue = async () => {
-    if (!westernUnionValueId) return;
-    try {
-      await updateBoletaEspecial(westernUnionValueId, {
-        name: "Western Union Value",
-        value: westernUnionValue,
-      });
-      setWesternUnionValueEditable(false);
-      Swal.fire(
-        "Guardado",
-        "El valor de Western Union ha sido actualizado.",
-        "success"
-      );
-    } catch (error) {
-      console.error("Error updating Western Union value:", error);
-      Swal.fire(
-        "Error",
-        "No se pudo actualizar el valor de Western Union.",
-        "error"
-      );
+    if (result.isConfirmed) {
+      const cierreData = {
+        boletasEspeciales: boletas.map((b) => ({
+          name: b.label,
+          quantity: b.quantity,
+          value: typeof b.value === "number" ? b.value : 0,
+        })),
+        cantidadTotalBoletas,
+        recargas,
+        recargasSubtotal,
+        westernUnionQuantity,
+        totalGanancia,
+      };
+
+      try {
+        if (id) {
+          await cierrePfService.updateCierrePf(id, cierreData);
+        } else {
+          await cierrePfService.createCierrePf(cierreData);
+        }
+        Swal.fire(
+          "¡Guardado!",
+          `Cierre ${id ? "actualizado" : "guardado"} con éxito.`,
+          "success"
+        );
+        navigate("/dashboard");
+      } catch (error) {
+        console.error("Error guardando el cierre:", error);
+        Swal.fire("Error", "No se pudo guardar el cierre.", "error");
+      }
     }
   };
 
-  const handleUpdateValorFacturaNormal = async () => {
-    if (!valorFacturaNormalId) return;
-    try {
-      await updateBoletaEspecial(valorFacturaNormalId, {
-        name: "Valor Factura Normal",
-        value: valorFacturaNormal,
-      });
-      setValorFacturaNormalEditable(false);
-      Swal.fire(
-        "Guardado",
-        "El valor de Factura Normal ha sido actualizado.",
-        "success"
-      );
-    } catch (error) {
-      console.error("Error updating Valor Factura Normal:", error);
-      Swal.fire(
-        "Error",
-        "No se pudo actualizar el valor de Factura Normal.",
-        "error"
-      );
-    }
-  };
-
-  const handleBoletaChange = (
-    id: string,
-    field: "quantity" | "value",
-    value: number
+  const handleUpdatePersistentValue = async (
+    valueId: string | null,
+    name: string,
+    value: number,
+    field: keyof IState
   ) => {
-    setBoletas((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, [field]: value } : b))
-    );
-  };
-
-  const toggleBoletaEdit = (id: string) => {
-    setBoletas((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, editable: !b.editable } : b))
-    );
+    if (!valueId) return;
+    try {
+      await cierrePfService.updateBoletaEspecial(valueId, { name, value });
+      dispatch({ type: "SET_FIELD", payload: { field, value: false } });
+      Swal.fire(
+        "Guardado",
+        `El valor de ${name} ha sido actualizado.`,
+        "success"
+      );
+    } catch (error) {
+      console.error(`Error updating ${name}:`, error);
+      Swal.fire("Error", `No se pudo actualizar el valor de ${name}.`, "error");
+    }
   };
 
   const items: IBoletaFormItem[] = [
@@ -327,30 +344,10 @@ export const useCierrePfForm = (id?: string) => {
   ];
 
   return {
+    state,
+    dispatch,
     items,
-    descFacturas,
-    totalGanancia,
-    recargasSubtotal,
-    recargasSubtotalEditable,
-    setRecargasSubtotal,
-    setRecargasSubtotalEditable,
-    setRecargas,
-    setCantidadTotalBoletas,
-    westernUnionQuantity,
-    setWesternUnionQuantity,
-    westernUnionValue,
-    setWesternUnionValue,
-    westernUnionValueEditable,
-    setWesternUnionValueEditable,
-    handleUpdateWesternUnionValue,
-    valorFacturaNormal,
-    setValorFacturaNormal,
-    valorFacturaNormalEditable,
-    setValorFacturaNormalEditable,
-    handleUpdateValorFacturaNormal,
     handleSubmit,
-    handleBoletaChange,
-    toggleBoletaEdit,
-    refetchBoletas,
+    handleUpdatePersistentValue,
   };
 };
