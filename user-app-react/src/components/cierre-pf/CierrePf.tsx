@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCierrePfForm, IBoletaFormItem } from "../../hooks/useCierrePfForm";
 import BoletasEspecialesModal from "./BoletasEspecialesModal";
@@ -36,7 +36,14 @@ const CierrePf = () => {
           />
         );
       case "recargas":
-        return <RecargasRow item={item} state={state} dispatch={dispatch} />;
+        return (
+          <RecargasRow
+            key={`${item.type}-${item.id}`}
+            item={item}
+            state={state}
+            dispatch={dispatch}
+          />
+        );
       case "especial":
         return <BoletaEspecialRow key={key} item={item} dispatch={dispatch} />;
       default:
@@ -67,7 +74,11 @@ const CierrePf = () => {
               <th>Subtotal</th>
             </tr>
           </thead>
-          <tbody>{items.map(renderRow)}</tbody>
+          <tbody>
+            {items.map((item) => (
+              <React.Fragment key={item.id}>{renderRow(item)}</React.Fragment>
+            ))}
+          </tbody>
         </table>
 
         <div className="d-flex flex-wrap gap-2 mt-1 align-items-center justify-content-between">
@@ -99,4 +110,3 @@ const CierrePf = () => {
 };
 
 export default CierrePf;
-

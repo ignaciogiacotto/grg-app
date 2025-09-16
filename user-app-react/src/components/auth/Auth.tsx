@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '../../store/auth';
-import { jwtDecode } from 'jwt-decode';
-import { login as loginService } from '../../services/authService';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../store/auth";
+import { jwtDecode } from "jwt-decode";
+import { login as loginService } from "../../services/authService";
 
 export const Auth = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { login } = useAuthContext();
 
@@ -15,20 +15,26 @@ export const Auth = () => {
     try {
       const data = await loginService(username, password);
       if (data.token) {
-        const decoded: { id: string, role: string, name: string, email: string, username: string } = jwtDecode(data.token);
+        const decoded: {
+          id: string;
+          role: string;
+          name: string;
+          email: string;
+          username: string;
+        } = jwtDecode(data.token);
         const user = { ...decoded, _id: decoded.id };
         login(data.token, user);
-        if (user.role === 'role_admin' || user.role === 'role_manager') {
-          navigate('/dashboard');
+        if (user.role === "role_admin" || user.role === "role_manager") {
+          navigate("/dashboard");
         } else {
-          navigate('/extractions'); // Navigate to user list for other roles
+          navigate("/extractions"); // Navigate to user list for other roles
         }
       } else {
-        alert('Credenciales invalidas');
+        alert("Credenciales invalidas");
       }
     } catch (error) {
-      console.error('Error durante el login:', error);
-      alert('Error durante el login');
+      console.error("Error durante el login:", error);
+      alert("Error durante el login");
     }
   };
 
@@ -43,7 +49,9 @@ export const Auth = () => {
             <div className="card-body">
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label htmlFor="username" className="form-label">Usuario</label>
+                  <label htmlFor="username" className="form-label">
+                    Usuario
+                  </label>
                   <input
                     type="text"
                     className="form-control"
@@ -54,7 +62,9 @@ export const Auth = () => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="password" className="form-label">Contraseña</label>
+                  <label htmlFor="password" className="form-label">
+                    Contraseña
+                  </label>
                   <input
                     type="password"
                     className="form-control"
@@ -64,7 +74,9 @@ export const Auth = () => {
                     required
                   />
                 </div>
-                <button type="submit" className="btn btn-primary">Ingresar</button>
+                <button type="submit" className="btn btn-primary">
+                  Ingresar
+                </button>
               </form>
             </div>
           </div>
