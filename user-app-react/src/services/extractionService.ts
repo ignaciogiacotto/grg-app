@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
-const API_URL = `${BASE_URL}/extractions`;
+const API_URL = `${process.env.REACT_APP_API_URL}/api/extractions`;
 
 export type ExtractionStatus = "Pendiente" | "Disponible" | "Completado";
 

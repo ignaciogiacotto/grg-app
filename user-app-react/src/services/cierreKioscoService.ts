@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/api/cierre-kiosco";
+const API_URL = `${process.env.REACT_APP_API_URL}/api/cierre-kiosco`;
 
 export interface ICierreKiosco {
   fac1: number;
