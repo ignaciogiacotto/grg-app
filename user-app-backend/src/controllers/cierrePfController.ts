@@ -33,7 +33,6 @@ export const getCierrePfById = async (req: Request, res: Response) => {
 
 export const updateCierrePf = async (req: Request, res: Response) => {
   try {
-    console.log("Data received in updateCierrePf:", req.body);
     const updatedCierre = await cierrePfService.updateCierrePf(
       req.params.id,
       req.body
