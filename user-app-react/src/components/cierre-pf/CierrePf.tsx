@@ -15,6 +15,7 @@ const CierrePf = () => {
   const { descFacturas, totalGanancia } = state;
 
   const renderRow = (item: IBoletaFormItem) => {
+    const key = `${item.type}-${item.id}`;
     switch (item.type) {
       case "western-union":
         return (
@@ -37,7 +38,7 @@ const CierrePf = () => {
       case "recargas":
         return <RecargasRow item={item} state={state} dispatch={dispatch} />;
       case "especial":
-        return <BoletaEspecialRow item={item} dispatch={dispatch} />;
+        return <BoletaEspecialRow key={key} item={item} dispatch={dispatch} />;
       default:
         return null;
     }
@@ -98,3 +99,4 @@ const CierrePf = () => {
 };
 
 export default CierrePf;
+
