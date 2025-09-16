@@ -1,4 +1,4 @@
-import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import { Modal, Button, Form } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import noteService from "../../services/noteService";
 import tagService from "../../services/tagService";
@@ -43,7 +43,6 @@ const NoteModal = ({ show, onHide, note, onSave }: NoteModalProps) => {
       ]);
       setAllUsers(usersResponse.content);
       setAllTags(tagsResponse);
-
       if (!note) {
         setVisibleTo(usersResponse.content.map((u: IUser) => u._id));
       }
@@ -88,18 +87,14 @@ const NoteModal = ({ show, onHide, note, onSave }: NoteModalProps) => {
       </Modal.Header>
       <Modal.Body>
         <Form>
-          {/* Título */}
           <Form.Group className="mb-3">
             <Form.Label>Título</Form.Label>
             <Form.Control
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Escribe un título..."
             />
           </Form.Group>
-
-          {/* Contenido */}
           <Form.Group className="mb-3">
             <Form.Label>Contenido</Form.Label>
             <Form.Control
@@ -107,54 +102,61 @@ const NoteModal = ({ show, onHide, note, onSave }: NoteModalProps) => {
               rows={5}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Escribe el contenido de la nota..."
             />
           </Form.Group>
-
-          {/* Visible para */}
           <Form.Group className="mb-3">
             <Form.Label>Visible para</Form.Label>
-            <Row style={{ maxHeight: "150px", overflowY: "auto" }}>
+            <div style={{ maxHeight: "150px", overflowY: "auto" }}>
               {allUsers.map((user: IUser) => (
-                <Col xs={6} key={user._id}>
-                  <Form.Check
-                    type="checkbox"
-                    label={user.name}
-                    checked={visibleTo.includes(user._id)}
-                    onChange={() => handleUserVisibilityChange(user._id)}
-                  />
-                </Col>
+                <Form.Check
+                  key={user._id}
+                  type="checkbox"
+                  label={user.name}
+                  checked={visibleTo.includes(user._id)}
+                  onChange={() => handleUserVisibilityChange(user._id)}
+                />
               ))}
-            </Row>
+            </div>
           </Form.Group>
-
-          {/* Etiquetas */}
           <Form.Group className="mb-3">
             <Form.Label>Etiquetas</Form.Label>
-            <Form.Select
-              multiple
-              value={tags}
-              onChange={(e) =>
-                setTags(
-                  Array.from(e.target.selectedOptions, (option) => option.value)
-                )
-              }
-            >
-              {allTags.map((tag: ITag) => (
-                <option key={tag._id} value={tag._id}>
-                  {tag.name}
-                </option>
-              ))}
-            </Form.Select>
-            <div className="d-flex mt-2 gap-2">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {allTags.map((tag: ITag) => {
+                const isSelected = tags.includes(tag._id);
+                return (
+                  <Button
+                    key={tag._id}
+                    variant={isSelected ? "primary" : "outline-secondary"}
+                    onClick={() =>
+                      setTags((prev) =>
+                        isSelected
+                          ? prev.filter((id) => id !== tag._id)
+                          : [...prev, tag._id]
+                      )
+                    }
+                    style={{
+                      padding: "0.6rem 1.2rem",
+                      fontSize: "1rem",
+                      borderRadius: "8px",
+                      border: isSelected ? "1px solid black" : "1px solid #ccc",
+                    }}>
+                    {tag.name}
+                  </Button>
+                );
+              })}
+            </div>
+            <div className="d-flex mt-3">
               <Form.Control
                 type="text"
                 placeholder="Nueva etiqueta"
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
               />
-              <Button variant="outline-secondary" onClick={handleCreateTag}>
-                <i className="bi bi-plus-lg"></i> Crear
+              <Button
+                variant="outline-secondary"
+                onClick={handleCreateTag}
+                style={{ marginLeft: "8px" }}>
+                Crear
               </Button>
             </div>
           </Form.Group>
@@ -164,7 +166,7 @@ const NoteModal = ({ show, onHide, note, onSave }: NoteModalProps) => {
         <Button variant="secondary" onClick={onHide}>
           Cerrar
         </Button>
-        <Button variant="primary" onClick={handleSave} disabled={!title.trim()}>
+        <Button variant="primary" onClick={handleSave}>
           Guardar
         </Button>
       </Modal.Footer>

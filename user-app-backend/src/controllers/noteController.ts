@@ -6,13 +6,11 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?._id?.toString(); // Explicitly convert to string
     if (!userId) {
-      console.error("noteController: userId is undefined (first check), sending 401.");
       return res.status(401).json({ message: 'Unauthorized' });
     }
     const notes = await noteService.getNotesForUser(userId);
     res.json(notes);
   } catch (error) {
-    console.error("Error fetching notes in noteController:", error);
     res.status(500).json({ message: 'Error fetching notes', error });
   }
 };
