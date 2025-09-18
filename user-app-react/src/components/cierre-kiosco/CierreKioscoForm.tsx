@@ -7,6 +7,11 @@ export const CierreKioscoForm = () => {
     formData,
     totalCaja,
     totalCigarros,
+    isDiscountEnabled,
+    discountPercentage,
+    discountAmount,
+    setIsDiscountEnabled,
+    setDiscountPercentage,
     handleSubmit,
     handleChange,
     handleCigarrosChange,
@@ -33,9 +38,14 @@ export const CierreKioscoForm = () => {
     </div>
   );
 
+  const switchStyle = {
+    backgroundColor: isDiscountEnabled ? '#0d6efd' : '#212529',
+    borderColor: isDiscountEnabled ? '#0d6efd' : '#212529',
+  };
+
   return (
-    <div className="container py-4">
-      <h2 className="mb-4">
+    <div className="container py-1">
+      <h2 className="mb-2">
         {id ? "✏️ Editar Cierre Kiosco" : "📝 Cierre Kiosco"}
       </h2>
 
@@ -47,19 +57,19 @@ export const CierreKioscoForm = () => {
               <h5 className="mb-0">Ingresos</h5>
             </div>
             <div className="card-body">
-              <div className="mb-3">
+              <div className="mb-2">
                 <label htmlFor="fac1" className="form-label">
                   Ganancia Factura B
                 </label>
                 {renderMoneyInput("fac1", "fac1", formData.fac1, handleChange)}
               </div>
-              <div className="mb-3">
+              <div className="mb-2">
                 <label htmlFor="fac2" className="form-label">
                   Ganancia Remitos
                 </label>
                 {renderMoneyInput("fac2", "fac2", formData.fac2, handleChange)}
               </div>
-              <div className="mb-3">
+              <div className="mb-2">
                 <label htmlFor="cyber" className="form-label">
                   Cyber
                 </label>
@@ -70,7 +80,7 @@ export const CierreKioscoForm = () => {
                   handleChange
                 )}
               </div>
-              <div className="mb-3">
+              <div className="mb-2">
                 <label htmlFor="cargVirt" className="form-label">
                   Cargas Virtuales
                 </label>
@@ -81,6 +91,47 @@ export const CierreKioscoForm = () => {
                   handleChange
                 )}
               </div>
+
+              {/* Discount Section */}
+              <hr />
+              <div className="form-check form-switch mb-1">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="discountSwitch"
+                  checked={isDiscountEnabled}
+                  onChange={(e) => setIsDiscountEnabled(e.target.checked)}
+                  style={switchStyle}
+                />
+                <label className="form-check-label" htmlFor="discountSwitch">
+                  Descontar % de la ganancia
+                </label>
+              </div>
+
+              {isDiscountEnabled && (
+                <div className="mb-2">
+                  <label htmlFor="discountPercentage" className="form-label">
+                    Porcentaje a descontar
+                  </label>
+                  <div className="input-group">
+                    <input
+                      id="discountPercentage"
+                      type="text"
+                      value={discountPercentage}
+                      onChange={(e) =>
+                        setDiscountPercentage(Number(e.target.value))
+                      }
+                      className="form-control"
+                      onFocus={(e) => e.target.select()}
+                    />
+                    <span className="input-group-text">%</span>
+                  </div>
+                  <div className="form-text">
+                    Descuento: ${discountAmount.toFixed(2)}
+                  </div>
+                </div>
+              )} 
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { IBoletaFormItem } from "../../hooks/useCierrePfForm";
+import React from "react";
 
 interface RecargasRowProps {
   item: IBoletaFormItem;
@@ -9,22 +10,39 @@ interface RecargasRowProps {
 export const RecargasRow = ({ item, state, dispatch }: RecargasRowProps) => {
   const { recargasSubtotal, recargasSubtotalEditable } = state;
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      const inputs = Array.from(
+        document.querySelectorAll(".cantidad-input")
+      ) as HTMLInputElement[];
+
+      const currentIndex = inputs.findIndex((input) => input === e.currentTarget);
+
+      if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
+        inputs[currentIndex + 1].focus();
+      }
+    }
+  };
+
   return (
     <tr key={item.id}>
       <td>{item.label}</td>
       <td>
         <input
-          type="number"
-          className="form-control form-control-sm text-end"
+          type="text"
+          className="form-control form-control-sm text-end cantidad-input"
           style={{ maxWidth: "100px" }}
           value={item.quantity}
           onChange={(e) =>
             dispatch({
               type: "SET_FIELD",
-              payload: { field: "recargas", value: Number(e.target.value) },
+              payload: { field: "recargas", value: parseInt(e.target.value) || 0 },
             })
           }
           onFocus={(e) => e.target.select()}
+          onKeyDown={handleKeyDown}
         />
       </td>
       <td>
@@ -32,7 +50,7 @@ export const RecargasRow = ({ item, state, dispatch }: RecargasRowProps) => {
           className="input-group input-group-sm"
           style={{ maxWidth: "120px" }}>
           <input
-            type="number"
+            type="text"
             className="form-control text-end"
             value={recargasSubtotal}
             readOnly={!recargasSubtotalEditable}
@@ -41,7 +59,7 @@ export const RecargasRow = ({ item, state, dispatch }: RecargasRowProps) => {
                 type: "SET_FIELD",
                 payload: {
                   field: "recargasSubtotal",
-                  value: Number(e.target.value),
+                  value: parseInt(e.target.value) || 0,
                 },
               })
             }

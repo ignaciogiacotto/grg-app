@@ -32,6 +32,7 @@ interface IState {
   valorFacturaNormalEditable: boolean;
   descFacturas: number;
   totalGanancia: number;
+  totalFacturasSubtotal: number;
 }
 
 // Reducer
@@ -61,6 +62,7 @@ const initialState: IState = {
   valorFacturaNormalEditable: false,
   descFacturas: 0,
   totalGanancia: 0,
+  totalFacturasSubtotal: 0,
 };
 
 const reducer = (state: IState, action: Action): IState => {
@@ -203,7 +205,7 @@ export const useCierrePfForm = (id?: string) => {
     const subtotalBoletasEspeciales = boletas.reduce(
       (acc, boleta) =>
         acc +
-        boleta.quantity * (typeof boleta.value === "number" ? boleta.value : 0),
+        (boleta.quantity * (typeof boleta.value === "number" ? boleta.value : 0)),
       0
     );
     const cantidadBoletasNormales = Math.max(
@@ -215,21 +217,15 @@ export const useCierrePfForm = (id?: string) => {
     const subtotalWesternUnion = westernUnionQuantity * westernUnionValue;
 
     dispatch({
-      type: "SET_FIELD",
+      type: "SET_STATE",
       payload: {
-        field: "descFacturas",
-        value: cantidadBoletasEspeciales + recargas,
-      },
-    });
-    dispatch({
-      type: "SET_FIELD",
-      payload: {
-        field: "totalGanancia",
-        value:
+        descFacturas: cantidadBoletasEspeciales + recargas,
+        totalGanancia:
           subtotalBoletasNormales +
           subtotalBoletasEspeciales +
           recargasSubtotal +
           subtotalWesternUnion,
+        totalFacturasSubtotal: subtotalBoletasNormales,
       },
     });
   }, [
@@ -321,12 +317,7 @@ export const useCierrePfForm = (id?: string) => {
       quantity: cantidadTotalBoletas,
       value: valorFacturaNormal,
       type: "total-facturas",
-      subtotal:
-        Math.max(
-          0,
-          cantidadTotalBoletas -
-            (boletas.reduce((acc, b) => acc + b.quantity, 0) + recargas)
-        ) * valorFacturaNormal,
+      subtotal: state.totalFacturasSubtotal,
     },
     ...boletas.map((b) => ({
       ...b,

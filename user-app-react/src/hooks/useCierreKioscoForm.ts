@@ -35,6 +35,9 @@ export const useCierreKioscoForm = (id?: string) => {
 
   const [totalCaja, setTotalCaja] = useState(0);
   const [totalCigarros, setTotalCigarros] = useState(0);
+  const [isDiscountEnabled, setIsDiscountEnabled] = useState(true);
+  const [discountPercentage, setDiscountPercentage] = useState(10);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -57,7 +60,18 @@ export const useCierreKioscoForm = (id?: string) => {
 
   useEffect(() => {
     const { fac1, fac2, cyber, cargVirt } = formData;
-    setTotalCaja(fac1 + fac2 + cyber + cargVirt);
+    const totalIngresos = fac1 + fac2 + cyber + cargVirt;
+
+    let finalTotalCaja = totalIngresos;
+    let calculatedDiscount = 0;
+
+    if (isDiscountEnabled) {
+      calculatedDiscount = (totalIngresos * discountPercentage) / 100;
+      finalTotalCaja -= calculatedDiscount;
+    }
+
+    setDiscountAmount(calculatedDiscount);
+    setTotalCaja(finalTotalCaja);
 
     const costoFacturaB =
       formData.cigarros.facturaB.totalVenta -
@@ -65,7 +79,7 @@ export const useCierreKioscoForm = (id?: string) => {
     const costoRemito =
       formData.cigarros.remito.totalVenta - formData.cigarros.remito.ganancia;
     setTotalCigarros(costoFacturaB + costoRemito);
-  }, [formData]);
+  }, [formData, isDiscountEnabled, discountPercentage]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -158,6 +172,11 @@ export const useCierreKioscoForm = (id?: string) => {
     formData,
     totalCaja,
     totalCigarros,
+    isDiscountEnabled,
+    discountPercentage,
+    discountAmount,
+    setIsDiscountEnabled,
+    setDiscountPercentage,
     handleSubmit,
     handleChange,
     handleCigarrosChange,
