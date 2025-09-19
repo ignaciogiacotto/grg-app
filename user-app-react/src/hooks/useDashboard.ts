@@ -6,13 +6,16 @@ import {
   EnvelopeSummary,
 } from "../services/reportService";
 
-type Period = "week" | "month" | "year";
+type Period = "day" | "week" | "month" | "year" | "range";
 
 export const useDashboard = (
   period: Period,
   year: number,
   month: number,
-  week: number
+  week: number,
+  selectedDate: string,
+  startDate: string,
+  endDate: string
 ) => {
   // --- STATE MANAGEMENT ---
   const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
@@ -20,6 +23,9 @@ export const useDashboard = (
   const [error, setError] = useState<string | null>(null);
   const [todayProfit, setTodayProfit] = useState<number>(0);
   const [currentMonthProfit, setCurrentMonthProfit] = useState<number>(0);
+  const [rangeProfit, setRangeProfit] = useState<number>(0);
+  const [rangeProfitKiosco, setRangeProfitKiosco] = useState<number>(0);
+  const [rangeProfitPf, setRangeProfitPf] = useState<number>(0);
   const [envelopes, setEnvelopes] = useState<EnvelopeSummary | null>(null);
 
   // --- LOGIC FOR SUMMARY CARDS (Today & Current Month) ---
@@ -59,8 +65,29 @@ export const useDashboard = (
       try {
         setLoading(true);
         setError(null);
-        const data = await getDailyProfitReport(period, year, month, week);
+        const data = await getDailyProfitReport(
+          period,
+          year,
+          month,
+          week,
+          selectedDate,
+          startDate,
+          endDate
+        );
         if (data) {
+          if (period === "range") {
+            const rangeKioscoTotal = data.reduce(
+              (acc, curr) => acc + curr.kioscoProfit,
+              0
+            );
+            const rangePfTotal = data.reduce(
+              (acc, curr) => acc + curr.pfProfit,
+              0
+            );
+            setRangeProfitKiosco(rangeKioscoTotal);
+            setRangeProfitPf(rangePfTotal);
+            setRangeProfit(rangeKioscoTotal + rangePfTotal);
+          }
           const labels = data.map((d: DailyProfit) =>
             new Date(d.date).toLocaleDateString("es-AR", { timeZone: "UTC" })
           );
@@ -91,7 +118,7 @@ export const useDashboard = (
       }
     };
     fetchData();
-  }, [period, year, month, week]);
+  }, [period, year, month, week, selectedDate, startDate, endDate]);
 
   // --- RETURN ALL STATE VALUES ---
   return {
@@ -101,5 +128,8 @@ export const useDashboard = (
     todayProfit,
     currentMonthProfit,
     envelopes,
+    rangeProfit,
+    rangeProfitKiosco,
+    rangeProfitPf,
   };
 };

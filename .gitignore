@@ -6,3 +6,4 @@
 # Local backups & scripts
 /backups/
 backupdb.bat
+start-servers-casa.bat

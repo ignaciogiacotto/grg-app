@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useCierreKioscoForm } from "../../hooks/useCierreKioscoForm";
+import { useState } from "react";
 
 export const CierreKioscoForm = () => {
   const { id } = useParams<{ id?: string }>();
@@ -16,6 +17,10 @@ export const CierreKioscoForm = () => {
     handleChange,
     handleCigarrosChange,
   } = useCierreKioscoForm(id);
+
+  const [debo, setDebo] = useState(0);
+  const [saldo, setSaldo] = useState(0);
+  const [sobre, setSobre] = useState(0);
 
   const renderMoneyInput = (
     id: string,
@@ -34,6 +39,26 @@ export const CierreKioscoForm = () => {
         className="form-control"
         onFocus={(e) => e.target.select()}
         required
+      />
+    </div>
+  );
+
+  const renderMoneyInputSinRequired = (
+    id: string,
+    name: string,
+    value: number | string,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  ) => (
+    <div className="input-group">
+      <span className="input-group-text">$</span>
+      <input
+        id={id}
+        type="text"
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="form-control"
+        onFocus={(e) => e.target.select()}
       />
     </div>
   );
@@ -94,44 +119,44 @@ export const CierreKioscoForm = () => {
 
               {/* Discount Section */}
               <hr />
-              <div className="form-check form-switch mb-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="discountSwitch"
-                  checked={isDiscountEnabled}
-                  onChange={(e) => setIsDiscountEnabled(e.target.checked)}
-                  style={switchStyle}
-                />
-                <label className="form-check-label" htmlFor="discountSwitch">
-                  Descontar % de la ganancia
-                </label>
-              </div>
-
-              {isDiscountEnabled && (
-                <div className="mb-2">
-                  <label htmlFor="discountPercentage" className="form-label">
-                    Porcentaje a descontar
-                  </label>
-                  <div className="input-group">
+              <div className="row align-items-center">
+                <div className="col-auto">
+                  <div className="form-check form-switch">
                     <input
-                      id="discountPercentage"
-                      type="text"
-                      value={discountPercentage}
-                      onChange={(e) =>
-                        setDiscountPercentage(Number(e.target.value))
-                      }
-                      className="form-control"
-                      onFocus={(e) => e.target.select()}
+                      className="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      id="discountSwitch"
+                      checked={isDiscountEnabled}
+                      onChange={(e) => setIsDiscountEnabled(e.target.checked)}
+                      style={switchStyle}
                     />
-                    <span className="input-group-text">%</span>
-                  </div>
-                  <div className="form-text">
-                    Descuento: ${discountAmount.toFixed(2)}
+                    <label className="form-check-label" htmlFor="discountSwitch">
+                      Descontar % de ganancia
+                    </label>
                   </div>
                 </div>
-              )} 
+                {isDiscountEnabled && (
+                  <div className="col">
+                    <div className="input-group">
+                      <input
+                        id="discountPercentage"
+                        type="text"
+                        value={discountPercentage}
+                        onChange={(e) =>
+                          setDiscountPercentage(Number(e.target.value))
+                        }
+                        className="form-control form-control-sm"
+                        onFocus={(e) => e.target.select()}
+                      />
+                      <span className="input-group-text">%</span>
+                    </div>
+                    <div className="form-text mt-1">
+                      Desc: ${discountAmount.toFixed(2)}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -231,6 +256,48 @@ export const CierreKioscoForm = () => {
                     🚬 Total Cigarros (Costo): ${totalCigarros}
                   </h5>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Debo, Saldo, Sobre */}
+        <h2 className="mb-0">
+          Telerecargas
+        </h2>
+        <div className="col-12">
+          <div className="card shadow-sm border-0">
+            <div className="card-body">
+              <div className="row g-3">
+                <div className="col-md-4">
+                  <label htmlFor="debo" className="form-label">
+                    Debo
+                  </label>
+                  {renderMoneyInputSinRequired("debo", "debo", debo, (e) =>
+                    setDebo(Number(e.target.value))
+                  )}
+                </div>
+                <div className="col-md-4">
+                  <label htmlFor="saldo" className="form-label">
+                    Saldo
+                  </label>
+                  {renderMoneyInputSinRequired("saldo", "saldo", saldo, (e) =>
+                    setSaldo(Number(e.target.value))
+                  )}
+                </div>
+                <div className="col-md-4">
+                  <label htmlFor="sobre" className="form-label">
+                    Sobre
+                  </label>
+                  {renderMoneyInputSinRequired("sobre", "sobre", sobre, (e) =>
+                    setSobre(Number(e.target.value))
+                  )}
+                </div>
+              </div>
+              <div className="mt-3">
+                <h5>
+                  Poner: ${debo - saldo - sobre}
+                </h5>
               </div>
             </div>
           </div>

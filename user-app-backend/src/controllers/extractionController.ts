@@ -7,11 +7,11 @@ export const handleCreateExtraction = async (
   res: Response
 ) => {
   try {
-    const { description, type } = req.body;
-    if (!description || !type) {
+    const { amount, clientNumber, type } = req.body;
+    if (!amount || !clientNumber || !type) {
       return res
         .status(400)
-        .json({ message: "Description and type are required" });
+        .json({ message: "Amount, client number and type are required" });
     }
     const createdBy = req.user?._id;
     if (!createdBy) {
@@ -19,7 +19,8 @@ export const handleCreateExtraction = async (
     }
 
     const extraction = await extractionService.createExtraction({
-      description,
+      amount,
+      clientNumber,
       type,
       createdBy,
     });
@@ -44,18 +45,20 @@ export const handleUpdateExtraction = async (
 ) => {
   try {
     const { id } = req.params;
-    const { status, isArchived, description, type } = req.body;
+    const { status, isArchived, amount, clientNumber, type } = req.body;
 
     const updates: {
       status?: any;
       isArchived?: boolean;
-      description?: string;
+      amount?: number;
+      clientNumber?: string;
       type?: "Western Union" | "Debit/MP";
     } = {};
 
     if (status) updates.status = status;
     if (isArchived !== undefined) updates.isArchived = isArchived;
-    if (description) updates.description = description;
+    if (amount) updates.amount = amount;
+    if (clientNumber) updates.clientNumber = clientNumber;
     if (type) updates.type = type;
 
     if (Object.keys(updates).length === 0) {

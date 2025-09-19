@@ -5,8 +5,8 @@ import { getDailyProfit, getEnvelopeSummary } from '../services/reportService';
 
 export const getDailyProfitReport = async (req: AuthRequest, res: Response) => {
   try {
-    const { period, year, month, week } = req.query;
-    const dailyProfit = await getDailyProfit(period as string, Number(year), Number(month), Number(week));
+    const { period, year, month, week, date, startDate, endDate } = req.query;
+    const dailyProfit = await getDailyProfit(period as string, Number(year), Number(month), Number(week), date as string, startDate as string, endDate as string);
     res.status(200).json(dailyProfit);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching daily profit report', error });

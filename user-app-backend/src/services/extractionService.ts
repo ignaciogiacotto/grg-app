@@ -5,7 +5,8 @@ import Extraction, {
 import { User } from "../models/userModel";
 
 export const createExtraction = async (data: {
-  description: string;
+  amount: number;
+  clientNumber: string;
   type: "Western Union" | "Debit/MP";
   createdBy: User["_id"];
 }): Promise<IExtraction> => {
@@ -25,7 +26,8 @@ export const updateExtraction = async (
   updates: {
     status?: ExtractionStatus;
     isArchived?: boolean;
-    description?: string;
+    amount?: number;
+    clientNumber?: string;
     type?: "Western Union" | "Debit/MP";
   }
 ): Promise<IExtraction | null> => {

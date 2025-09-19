@@ -10,14 +10,18 @@ import {
 import Swal from "sweetalert2";
 
 export const useExtractions = () => {
-  const [extractions, setExtractions] = useState<IExtraction[]>([]);
+  const [pendingExtractions, setPendingExtractions] = useState<IExtraction[]>([]);
+  const [confirmedExtractions, setConfirmedExtractions] = useState<IExtraction[]>([]);
+  const [completedExtractions, setCompletedExtractions] = useState<IExtraction[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchExtractions = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getExtractions();
-      setExtractions(data);
+      setPendingExtractions(data.filter(e => e.status === 'Pendiente' || e.status === 'Disponible'));
+      setConfirmedExtractions(data.filter(e => e.status === 'Avisado'));
+      setCompletedExtractions(data.filter(e => e.status === 'Completado'));
     } catch (error) {
       Swal.fire("Error", "Could not fetch extractions.", "error");
     }
@@ -29,16 +33,17 @@ export const useExtractions = () => {
   }, [fetchExtractions]);
 
   const handleCreate = async (
-    description: string,
+    amount: string,
+    clientNumber: string,
     type: "Western Union" | "Debit/MP"
   ) => {
-    if (description.trim() === "") {
-      Swal.fire("Attention", "Description cannot be empty.", "warning");
+    if (amount.trim() === "") {
+      Swal.fire("Attention", "Amount cannot be empty.", "warning");
       return;
     }
     try {
-      const newExtraction = await createExtraction({ description, type });
-      setExtractions((prev) => [newExtraction, ...prev]);
+      const newExtraction = await createExtraction({ amount: Number(amount), clientNumber, type });
+      setPendingExtractions((prev) => [newExtraction, ...prev]);
     } catch (error) {
       Swal.fire("Error", "Could not create extraction.", "error");
     }
@@ -54,12 +59,8 @@ export const useExtractions = () => {
     }
   ) => {
     try {
-      const updated = await updateExtraction(id, updates);
-      if (updated.isArchived) {
-        setExtractions((prev) => prev.filter((e) => e._id !== id));
-      } else {
-        setExtractions((prev) => prev.map((e) => (e._id === id ? updated : e)));
-      }
+      await updateExtraction(id, updates);
+      fetchExtractions(); // Refetch all to ensure consistency
     } catch (error) {
       Swal.fire("Error", "Could not update extraction.", "error");
     }
@@ -87,7 +88,9 @@ export const useExtractions = () => {
   };
 
   return {
-    extractions,
+    pendingExtractions,
+    confirmedExtractions,
+    completedExtractions,
     loading,
     fetchExtractions,
     handleCreate,

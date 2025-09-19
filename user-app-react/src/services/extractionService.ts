@@ -2,11 +2,12 @@ import axios from "axios";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/extractions`;
 
-export type ExtractionStatus = "Pendiente" | "Disponible" | "Completado";
+export type ExtractionStatus = "Pendiente" | "Disponible" | "Avisado" | "Completado";
 
 export interface IExtraction {
   _id: string;
-  description: string;
+  amount: number;
+  clientNumber: string;
   type: "Western Union" | "Debit/MP";
   status: ExtractionStatus;
   isArchived: boolean;
@@ -31,7 +32,8 @@ export const getExtractions = async (): Promise<IExtraction[]> => {
 };
 
 export const createExtraction = async (data: {
-  description: string;
+  amount: number;
+  clientNumber: string;
   type: "Western Union" | "Debit/MP";
 }): Promise<IExtraction> => {
   const token = getAuthToken();

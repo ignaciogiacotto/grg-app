@@ -21,7 +21,7 @@ ChartJS.register(
   Legend
 );
 
-type Period = "week" | "month" | "year";
+type Period = "day" | "week" | "month" | "year" | "range";
 
 const currentYear = new Date().getFullYear();
 
@@ -30,6 +30,15 @@ const Dashboard: React.FC = () => {
   const [year, setYear] = useState<number>(currentYear);
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const [week, setWeek] = useState<number>(1);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [startDate, setStartDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [endDate, setEndDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
 
   const {
     chartData,
@@ -38,7 +47,10 @@ const Dashboard: React.FC = () => {
     todayProfit,
     currentMonthProfit,
     envelopes,
-  } = useDashboard(period, year, month, week);
+    rangeProfit,
+    rangeProfitKiosco,
+    rangeProfitPf,
+  } = useDashboard(period, year, month, week, selectedDate, startDate, endDate);
 
   const options = {
     plugins: { title: { display: false } },
@@ -49,6 +61,50 @@ const Dashboard: React.FC = () => {
 
   const renderFilters = () => {
     switch (period) {
+      case "day":
+        return (
+          <div className="col-md-3">
+            <label htmlFor="date-select" className="form-label">
+              Fecha
+            </label>
+            <input
+              id="date-select"
+              type="date"
+              className="form-control"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
+          </div>
+        );
+      case "range":
+        return (
+          <>
+            <div className="col-md-3">
+              <label htmlFor="start-date-select" className="form-label">
+                Desde
+              </label>
+              <input
+                id="start-date-select"
+                type="date"
+                className="form-control"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="col-md-3">
+              <label htmlFor="end-date-select" className="form-label">
+                Hasta
+              </label>
+              <input
+                id="end-date-select"
+                type="date"
+                className="form-control"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </>
+        );
       case "year":
         return (
           <div className="col-md-3">
@@ -197,7 +253,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="col-md-6">
-              <div className="card text-bg-info shadow-sm">
+              <div className="card text-bg-primary shadow-sm">
                 <div className="card-body">
                   <h6 className="card-subtitle mb-2">Ganancia Total del Mes</h6>
                   <h3 className="mb-0">
@@ -214,6 +270,14 @@ const Dashboard: React.FC = () => {
               <div className="row align-items-end g-3">
                 <div className="col-md-auto">
                   <div className="btn-group" role="group">
+                    <button
+                      type="button"
+                      className={`btn ${
+                        period === "day" ? "btn-primary" : "btn-outline-primary"
+                      }`}
+                      onClick={() => setPeriod("day")}>
+                      Día
+                    </button>
                     <button
                       type="button"
                       className={`btn ${
@@ -244,10 +308,62 @@ const Dashboard: React.FC = () => {
                       onClick={() => setPeriod("year")}>
                       Año
                     </button>
+                    <button
+                      type="button"
+                      className={`btn ${
+                        period === "range"
+                          ? "btn-primary"
+                          : "btn-outline-primary"
+                      }`}
+                      onClick={() => setPeriod("range")}>
+                      Rango
+                    </button>
                   </div>
                 </div>
                 {renderFilters()}
               </div>
+              {period === "range" && (
+  <div className="mt-3">
+    <h4 className="mb-3">Ganancias del Rango</h4>
+    <div className="row g-3">
+      <div className="col-md-4">
+        <div className="card text-bg-info shadow-sm">
+          <div className="card-body">
+            <h6 className="card-subtitle mb-2">Ganancia Kiosco</h6>
+            <h3 className="mb-0">
+              ${rangeProfitKiosco.toLocaleString("es-AR")}
+            </h3>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-md-4">
+        <div className="card text-bg-danger shadow-sm">
+          <div className="card-body">
+            <h6 className="card-subtitle mb-2">Ganancia PF</h6>
+            <h3 className="mb-0">
+              ${rangeProfitPf.toLocaleString("es-AR")}
+            </h3>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-md-4">
+        <div className="card text-bg-warning shadow-sm">
+          <div className="card-body">
+            <h6 className="card-subtitle mb-2">Ganancia Total</h6>
+            <h3 className="mb-0">
+              ${rangeProfit.toLocaleString("es-AR")}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
             </div>
           </div>
 

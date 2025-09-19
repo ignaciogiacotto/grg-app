@@ -13,7 +13,7 @@ export interface DailyProfit {
   pfProfit: number;
 }
 
-export const getDailyProfitReport = async (period: 'week' | 'month' | 'year', year?: number, month?: number, week?: number): Promise<DailyProfit[]> => {
+export const getDailyProfitReport = async (period: 'day' | 'week' | 'month' | 'year' | 'range', year?: number, month?: number, week?: number, date?: string, startDate?: string, endDate?: string): Promise<DailyProfit[]> => {
   const token = getAuthToken();
   const response = await axios.get(`${API_URL}/daily-profit`, {
     headers: {
@@ -23,7 +23,10 @@ export const getDailyProfitReport = async (period: 'week' | 'month' | 'year', ye
       period,
       year,
       month,
-      week
+      week,
+      date,
+      startDate,
+      endDate
     },
   });
   return response.data;

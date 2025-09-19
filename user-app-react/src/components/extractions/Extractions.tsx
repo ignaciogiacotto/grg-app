@@ -14,10 +14,247 @@ import {
 import { useExtractions } from "../../hooks/useExtractions";
 import { format } from "date-fns";
 import { getExchangeRate } from "../../services/exchangeRateService";
+import { IExtraction } from "../../services/extractionService";
+
+const formatCurrency = (value: number) => {
+  if (isNaN(value) || value === 0) return "";
+  return `$${new Intl.NumberFormat("es-AR").format(value)}`;
+};
+
+// Helper component for each column
+const ExtractionColumn: React.FC<{
+  title: string;
+  extractions: IExtraction[];
+  loading: boolean;
+  onUpdate: (id: string, updates: any) => void;
+  onStartEdit: (extraction: IExtraction) => void;
+  onCancelEdit: () => void;
+  onSaveEdit: () => void;
+  onEditFormChange: (name: string, value: string) => void;
+  editingId: string | null;
+  editingData: any;
+  isEditingAmountFocused: boolean;
+  setIsEditingAmountFocused: (isFocused: boolean) => void;
+}> = ({
+  title,
+  extractions,
+  loading,
+  onUpdate,
+  onStartEdit,
+  onCancelEdit,
+  onSaveEdit,
+  onEditFormChange,
+  editingId,
+  editingData,
+  isEditingAmountFocused,
+  setIsEditingAmountFocused,
+}) => {
+  const getStatusVariant = (status: string) => {
+    if (status === "Disponible") return "success";
+    if (status === "Avisado") return "info";
+    if (status === "Completado") return "secondary";
+    return "primary";
+  };
+
+  const getBackgroundClass = (status: string) => {
+    if (status === "Disponible") return "bg-success-subtle";
+    if (status === "Avisado") return "bg-info-subtle";
+    if (status === "Completado") return "bg-light";
+    return "";
+  };
+
+  return (
+    <Card className="shadow-sm h-100">
+      <Card.Header>
+        <h5 className="mb-0">{title}</h5>
+      </Card.Header>
+      <ListGroup
+        variant="flush"
+        style={{ overflowY: "auto", maxHeight: "60vh" }}>
+        {loading ? (
+          <div className="text-center p-3">
+            <Spinner animation="border" />
+          </div>
+        ) : extractions.length > 0 ? (
+          extractions.map((e) => (
+            <ListGroup.Item
+              key={e._id}
+              className={`d-flex justify-content-between align-items-center ${getBackgroundClass(
+                e.status
+              )}`}>
+              <div className="d-flex align-items-center flex-grow-1">
+                {editingId !== e._id && e.status === "Pendiente" && (
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={() => onStartEdit(e)}
+                    className="me-3">
+                    <i className="bi bi-pencil"></i>
+                  </Button>
+                )}
+
+                <div className="flex-grow-1">
+                  {editingId === e._id ? (
+                    <>
+                      <InputGroup className="gap-2 mb-2">
+                        <Form.Control
+                          name="amount"
+                          value={
+                            isEditingAmountFocused
+                              ? editingData.amount
+                              : formatCurrency(editingData.amount)
+                          }
+                          onChange={(ev) =>
+                            onEditFormChange(
+                              "amount",
+                              ev.target.value.replace(/[^0-9]/g, "")
+                            )
+                          }
+                          onFocus={() => setIsEditingAmountFocused(true)}
+                          onBlur={() => setIsEditingAmountFocused(false)}
+                        />
+                        <Form.Control
+                          name="clientNumber"
+                          value={editingData.clientNumber}
+                          onChange={(e) =>
+                            onEditFormChange(e.target.name, e.target.value)
+                          }
+                        />
+                        <div className="d-flex gap-2 mt-2">
+                          <Button
+                            variant="outline-success"
+                            size="sm"
+                            onClick={onSaveEdit}
+                            style={{ minWidth: "90px" }}>
+                            <i className="bi bi-check-lg"></i> Guardar
+                          </Button>
+
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={onCancelEdit}
+                            style={{ minWidth: "90px" }}>
+                            <i className="bi bi-x-lg"></i> Cancelar
+                          </Button>
+                        </div>
+                      </InputGroup>
+
+                      <div className="d-flex gap-3">
+                        <Form.Check
+                          type="radio"
+                          id={`wu-${e._id}`}
+                          label="Western Union"
+                          name="type"
+                          value="Western Union"
+                          checked={editingData.type === "Western Union"}
+                          onChange={(e) =>
+                            onEditFormChange(e.target.name, e.target.value)
+                          }
+                        />
+                        <Form.Check
+                          type="radio"
+                          id={`mp-${e._id}`}
+                          label="Débito/MP"
+                          name="type"
+                          value="Debit/MP"
+                          checked={editingData.type === "Debit/MP"}
+                          onChange={(e) =>
+                            onEditFormChange(e.target.name, e.target.value)
+                          }
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span
+                        className={
+                          e.status === "Completado"
+                            ? "text-muted text-decoration-line-through"
+                            : "fw-medium"
+                        }>
+                        {`${formatCurrency(e.amount)} - N°: ${e.clientNumber}`}
+                      </span>
+                      <br />
+                      <small className="text-muted">
+                        {e.createdBy?.name} -{" "}
+                        {format(new Date(e.createdAt), "HH:mm")}hs
+                        <Badge
+                          pill
+                          bg={e.type === "Western Union" ? "warning" : "info"}
+                          className="ms-2">
+                          {e.type}
+                        </Badge>
+                        <Badge
+                          pill
+                          bg={getStatusVariant(e.status)}
+                          className="ms-2 text-capitalize">
+                          {e.status}
+                        </Badge>
+                      </small>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                {editingId !== e._id && (
+                  <>
+                    {e.status === "Pendiente" && (
+                      <Button
+                        variant="outline-success"
+                        size="sm"
+                        onClick={() =>
+                          onUpdate(e._id, { status: "Disponible" })
+                        }>
+                        <i className="bi bi-check-lg"></i> Disponible
+                      </Button>
+                    )}
+                    {e.status === "Disponible" && (
+                      <Button
+                        variant="outline-info"
+                        size="sm"
+                        onClick={() => onUpdate(e._id, { status: "Avisado" })}>
+                        <i className="bi bi-bell"></i> Avisado
+                      </Button>
+                    )}
+                    {e.status === "Avisado" && (
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() =>
+                          onUpdate(e._id, { status: "Completado" })
+                        }>
+                        <i className="bi bi-check-all"></i> Completado
+                      </Button>
+                    )}
+                    {e.status === "Completado" && (
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() => onUpdate(e._id, { isArchived: true })}>
+                        <i className="bi bi-archive"></i> Archivar
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            </ListGroup.Item>
+          ))
+        ) : (
+          <ListGroup.Item className="text-center text-muted">
+            No hay solicitudes.
+          </ListGroup.Item>
+        )}
+      </ListGroup>
+    </Card>
+  );
+};
 
 const Extractions: React.FC = () => {
-  // --- State original del componente ---
-  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [clientNumber, setClientNumber] = useState("");
+  const [isAmountFocused, setIsAmountFocused] = useState(false);
+  const [isEditingAmountFocused, setIsEditingAmountFocused] = useState(false);
   const [type, setType] = useState<"Western Union" | "Debit/MP">(
     "Western Union"
   );
@@ -27,20 +264,21 @@ const Extractions: React.FC = () => {
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [amounts, setAmounts] = useState({ ars: "", foreign: "" });
   const [lastEdited, setLastEdited] = useState<"ars" | "foreign" | null>(null);
-  const [shippingCost, setShippingCost] = useState(0);
   const [totalPayable, setTotalPayable] = useState(0);
   const [loadingRate, setLoadingRate] = useState(true);
   const [errorRate, setErrorRate] = useState<string | null>(null);
 
-  // --- State para la edición en línea ---
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<{
-    description: string;
+    amount: number;
+    clientNumber: string;
     type: "Western Union" | "Debit/MP";
-  }>({ description: "", type: "Western Union" });
+  }>({ amount: 0, clientNumber: "", type: "Western Union" });
 
   const {
-    extractions,
+    pendingExtractions,
+    confirmedExtractions,
+    completedExtractions,
     loading: loadingExtractions,
     fetchExtractions,
     handleCreate,
@@ -48,7 +286,7 @@ const Extractions: React.FC = () => {
     handleArchiveAll,
   } = useExtractions();
 
-  // --- Lógica para la calculadora (sin cambios) ---
+  // --- Lógica para la calculadora ---
   const countryCurrency: { [key: string]: string } = {
     PY: "PYG",
     US: "USD",
@@ -81,27 +319,23 @@ const Extractions: React.FC = () => {
         const principalArs = parseFloat(amounts.ars);
         if (isNaN(principalArs) || principalArs <= 0) {
           setAmounts((prev) => ({ ...prev, foreign: "" }));
-          setShippingCost(0);
           setTotalPayable(0);
           return;
         }
         const foreignAmount = principalArs * exchangeRate;
         setAmounts((prev) => ({ ...prev, foreign: foreignAmount.toFixed(2) }));
         const cost = principalArs * 0.05 * 1.21;
-        setShippingCost(cost);
         setTotalPayable(principalArs + cost);
       } else if (lastEdited === "foreign") {
         const foreignAmount = parseFloat(amounts.foreign);
         if (isNaN(foreignAmount) || foreignAmount <= 0) {
           setAmounts((prev) => ({ ...prev, ars: "" }));
-          setShippingCost(0);
           setTotalPayable(0);
           return;
         }
         const principalArs = foreignAmount / exchangeRate;
         setAmounts((prev) => ({ ...prev, ars: principalArs.toFixed(2) }));
         const cost = principalArs * 0.05 * 1.21;
-        setShippingCost(cost);
         setTotalPayable(principalArs + cost);
       }
     };
@@ -118,18 +352,24 @@ const Extractions: React.FC = () => {
     setLastEdited("foreign");
   };
 
-  // --- Lógica para la edición en línea ---
-  const handleStartEdit = (extraction: any) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleCreate(amount, clientNumber, type);
+    setAmount("");
+    setClientNumber("");
+  };
+
+  const handleStartEdit = (extraction: IExtraction) => {
     setEditingId(extraction._id);
     setEditingData({
-      description: extraction.description,
+      amount: extraction.amount,
+      clientNumber: extraction.clientNumber,
       type: extraction.type,
     });
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setEditingData({ description: "", type: "Western Union" });
   };
 
   const handleSaveEdit = async () => {
@@ -138,43 +378,22 @@ const Extractions: React.FC = () => {
     setEditingId(null);
   };
 
-  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleEditFormChange = (name: string, value: string) => {
     setEditingData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // --- Lógica original del componente ---
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleCreate(description, type);
-    setDescription("");
-  };
-
-  const getStatusVariant = (status: string) => {
-    if (status === "Disponible") return "success";
-    if (status === "Completado") return "secondary";
-    return "primary";
-  };
-
-  const getBackgroundClass = (status: string) => {
-    if (status === "Disponible") return "bg-success-subtle";
-    if (status === "Completado") return "bg-light";
-    return "";
   };
 
   return (
     <Container className="my-4">
       <h1 className="mb-4 text-center fw-bold">
-        💸 Solicitudes de extraccion de dinero
+        💸 Solicitudes de extracción de dinero
       </h1>
-      {/* --- Calculadora de Envíos Compacta --*/}
+
       <Card className="mb-3 shadow-sm">
         <Card.Body className="py-2 px-3">
           <Row className="g-2 align-items-start">
             <Form.Label className="fw-medium mb-0">
               Cotización Rápida
             </Form.Label>
-
             <Col xs={12} sm={6} md={3}>
               <Form.Group className="mb-1">
                 <Form.Label className="small fw-medium mb-0">
@@ -189,7 +408,6 @@ const Extractions: React.FC = () => {
                 />
               </Form.Group>
             </Col>
-
             <Col xs={12} sm={6} md={4}>
               <Form.Group className="mb-0">
                 <Form.Label className="small fw-medium mb-0">
@@ -222,7 +440,6 @@ const Extractions: React.FC = () => {
                 )}
               </Form.Group>
             </Col>
-
             <Col xs={12} md={4}>
               <Form.Group className="mb-0">
                 <Form.Label className="small fw-medium mb-0">
@@ -241,7 +458,6 @@ const Extractions: React.FC = () => {
               </Form.Group>
             </Col>
           </Row>
-
           {loadingRate && (
             <div className="text-center text-muted pt-1 small">
               Cargando tasa...
@@ -255,24 +471,44 @@ const Extractions: React.FC = () => {
         </Card.Body>
       </Card>
 
-      <Card className="mb-4 shadow-sm">
-        {" "}
-        {/* Formulario Original */}
+      <Card className="mb-3 shadow-sm">
         <Card.Body>
+        <Form.Label className="fw-medium mb-2">
+              Nueva Solicitud
+            </Form.Label>
           <Form onSubmit={handleSubmit}>
             <Row className="align-items-end g-3">
-              <Col sm={12} md={6}>
-                <Form.Label
-                  htmlFor="description-extraction"
-                  className="fw-medium">
-                  Nueva Solicitud
+              <Col sm={12} md={3}>
+                <Form.Label htmlFor="amount-extraction" className="fw-medium">
+                  Monto
                 </Form.Label>
                 <InputGroup>
                   <Form.Control
-                    id="description-extraction"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Ej., $5000 Cliente..."
+                    id="amount-extraction"
+                    value={
+                      isAmountFocused ? amount : formatCurrency(Number(amount))
+                    }
+                    onChange={(e) =>
+                      setAmount(e.target.value.replace(/[^0-9]/g, ""))
+                    }
+                    onFocus={() => setIsAmountFocused(true)}
+                    onBlur={() => setIsAmountFocused(false)}
+                    placeholder="Ej., 100000"
+                  />
+                </InputGroup>
+              </Col>
+              <Col sm={12} md={3}>
+                <Form.Label
+                  htmlFor="client-number-extraction"
+                  className="fw-medium">
+                  Número de Cliente
+                </Form.Label>
+                <InputGroup>
+                  <Form.Control
+                    id="client-number-extraction"
+                    value={clientNumber}
+                    onChange={(e) => setClientNumber(e.target.value)}
+                    placeholder="Ej., 123456789"
                   />
                 </InputGroup>
               </Col>
@@ -311,181 +547,81 @@ const Extractions: React.FC = () => {
           </Form>
         </Card.Body>
       </Card>
-      <Card className="shadow-sm">
-        {" "}
-        {/* Lista Original */}
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <div>
-            <h5 className="mb-0 d-inline-block">Solicitudes pendientes</h5>
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={() => fetchExtractions()}
-              disabled={loadingExtractions}
-              className="ms-2">
-              {loadingExtractions ? (
-                <Spinner as="span" animation="border" size="sm" />
-              ) : (
-                <i className="bi bi-arrow-clockwise"></i>
-              )}
-            </Button>
-          </div>
+
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div>
           <Button
-            variant="outline-danger"
+            variant="outline-secondary"
             size="sm"
-            onClick={handleArchiveAll}
+            onClick={() => fetchExtractions()}
             disabled={loadingExtractions}>
-            <i className="bi bi-archive-fill me-1"></i> Eliminar completadas
+            {loadingExtractions ? (
+              <Spinner as="span" animation="border" size="sm" />
+            ) : (
+              <i className="bi bi-arrow-clockwise"></i>
+            )}
+            <span className="ms-2">Refrescar</span>
           </Button>
-        </Card.Header>
-        <ListGroup variant="flush">
-          {extractions.length > 0 ? (
-            extractions.map((e) => (
-              <ListGroup.Item
-                key={e._id}
-                className={`d-flex justify-content-between align-items-center ${getBackgroundClass(
-                  e.status
-                )}`}>
-                <div className="d-flex align-items-center flex-grow-1">
-                  {/* --- Botón Editar (Izquierda) --- */}
-                  {editingId !== e._id && e.status === "Pendiente" && (
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      onClick={() => handleStartEdit(e)}
-                      className="me-3">
-                      <i className="bi bi-pencil"></i>
-                    </Button>
-                  )}
+        </div>
+        <Button
+          variant="outline-danger"
+          size="sm"
+          onClick={handleArchiveAll}
+          disabled={loadingExtractions}>
+          <i className="bi bi-archive-fill me-1"></i> Eliminar completadas
+        </Button>
+      </div>
 
-                  {/* --- Descripción o Formulario de Edición --- */}
-                  <div className="flex-grow-1">
-                    {editingId === e._id ? (
-                      <>
-                        <InputGroup className="gap-2 mb-2">
-                          <Form.Control
-                            name="description"
-                            value={editingData.description}
-                            onChange={handleEditFormChange}
-                          />
-                          <div className="d-flex gap-2 mt-2">
-                            <Button
-                              variant="outline-success"
-                              size="sm"
-                              onClick={handleSaveEdit}
-                              style={{ minWidth: "90px" }}>
-                              <i className="bi bi-check-lg"></i> Guardar
-                            </Button>
-
-                            <Button
-                              variant="outline-secondary"
-                              size="sm"
-                              onClick={handleCancelEdit}
-                              style={{ minWidth: "90px" }}>
-                              <i className="bi bi-x-lg"></i> Cancelar
-                            </Button>
-                          </div>
-                        </InputGroup>
-
-                        <div className="d-flex gap-3">
-                          <Form.Check
-                            type="radio"
-                            id={`wu-${e._id}`}
-                            label="Western Union"
-                            name="type"
-                            value="Western Union"
-                            checked={editingData.type === "Western Union"}
-                            onChange={handleEditFormChange}
-                          />
-                          <Form.Check
-                            type="radio"
-                            id={`mp-${e._id}`}
-                            label="Débito/MP"
-                            name="type"
-                            value="Debit/MP"
-                            checked={editingData.type === "Debit/MP"}
-                            onChange={handleEditFormChange}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <span
-                          className={
-                            e.status === "Completado"
-                              ? "text-muted text-decoration-line-through"
-                              : "fw-medium"
-                          }>
-                          {e.description}
-                        </span>
-                        <br />
-                        <small className="text-muted">
-                          {e.createdBy?.name} -{" "}
-                          {format(new Date(e.createdAt), "HH:mm")}hs
-                          <Badge
-                            pill
-                            bg={e.type === "Western Union" ? "warning" : "info"}
-                            className="ms-2">
-                            {e.type}
-                          </Badge>
-                          <Badge
-                            pill
-                            bg={getStatusVariant(e.status)}
-                            className="ms-2 text-capitalize">
-                            {e.status}
-                          </Badge>
-                        </small>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* --- Botones de Acción (Derecha, cuando NO está editando) --- */}
-                <div>
-                  {editingId !== e._id && (
-                    <>
-                      {e.status === "Pendiente" && (
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          onClick={() =>
-                            handleUpdate(e._id, { status: "Disponible" })
-                          }>
-                          <i className="bi bi-check-lg"></i> Disponible
-                        </Button>
-                      )}
-                      {e.status === "Disponible" && (
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          onClick={() =>
-                            handleUpdate(e._id, { status: "Completado" })
-                          }>
-                          <i className="bi bi-check-all"></i> Completado
-                        </Button>
-                      )}
-                      {e.status === "Completado" && (
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          onClick={() =>
-                            handleUpdate(e._id, { isArchived: true })
-                          }>
-                          <i className="bi bi-archive"></i> Archivar
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </ListGroup.Item>
-            ))
-          ) : (
-            <ListGroup.Item className="text-center text-muted">
-              No hay solicitudes pendientes.
-            </ListGroup.Item>
-          )}
-        </ListGroup>
-      </Card>
+      <Row>
+        <Col md={4}>
+          <ExtractionColumn
+            title="Pendientes"
+            extractions={pendingExtractions}
+            loading={loadingExtractions}
+            onUpdate={handleUpdate}
+            onStartEdit={handleStartEdit}
+            onCancelEdit={handleCancelEdit}
+            onSaveEdit={handleSaveEdit}
+            onEditFormChange={handleEditFormChange}
+            editingId={editingId}
+            editingData={editingData}
+            isEditingAmountFocused={isEditingAmountFocused}
+            setIsEditingAmountFocused={setIsEditingAmountFocused}
+          />
+        </Col>
+        <Col md={4}>
+          <ExtractionColumn
+            title="Confirmadas"
+            extractions={confirmedExtractions}
+            loading={loadingExtractions}
+            onUpdate={handleUpdate}
+            onStartEdit={handleStartEdit}
+            onCancelEdit={handleCancelEdit}
+            onSaveEdit={handleSaveEdit}
+            onEditFormChange={handleEditFormChange}
+            editingId={editingId}
+            editingData={editingData}
+            isEditingAmountFocused={isEditingAmountFocused}
+            setIsEditingAmountFocused={setIsEditingAmountFocused}
+          />
+        </Col>
+        <Col md={4}>
+          <ExtractionColumn
+            title="Completadas"
+            extractions={completedExtractions}
+            loading={loadingExtractions}
+            onUpdate={handleUpdate}
+            onStartEdit={handleStartEdit}
+            onCancelEdit={handleCancelEdit}
+            onSaveEdit={handleSaveEdit}
+            onEditFormChange={handleEditFormChange}
+            editingId={editingId}
+            editingData={editingData}
+            isEditingAmountFocused={isEditingAmountFocused}
+            setIsEditingAmountFocused={setIsEditingAmountFocused}
+          />
+        </Col>
+      </Row>
     </Container>
   );
 };

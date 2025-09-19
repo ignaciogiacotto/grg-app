@@ -49,13 +49,35 @@ export const getDailyProfit = async (
   period: string,
   year?: number,
   month?: number,
-  week?: number
+  week?: number,
+  date?: string,
+  startDate?: string,
+  endDate?: string
 ): Promise<DailyProfit[]> => {
   let start, end;
 
   const currentYear = new Date().getFullYear();
 
   switch (period) {
+    case "day":
+      const day = date ? new Date(date) : new Date();
+      start = startOfDay(day);
+      end = endOfDay(day);
+      break;
+    case "range":
+      if (startDate) {
+        const [year, month, day] = startDate.split('-').map(Number);
+        start = startOfDay(new Date(year, month - 1, day));
+      } else {
+        start = new Date();
+      }
+      if (endDate) {
+        const [year, month, day] = endDate.split('-').map(Number);
+        end = endOfDay(new Date(year, month - 1, day));
+      } else {
+        end = new Date();
+      }
+      break;
     case "year":
       ({ start, end } = getYearDateRange(year || currentYear));
       break;
