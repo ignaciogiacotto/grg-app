@@ -1,3 +1,8 @@
 # Misc
 *.xlsx
 *.txt
+*.pdf
+
+# Local backups & scripts
+/backups/
+backupdb.bat
