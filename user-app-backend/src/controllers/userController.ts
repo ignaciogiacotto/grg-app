@@ -75,3 +75,12 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
   }
   res.status(204).send();
 };
+
+export const refreshToken = (req: AuthRequest, res: Response) => {
+  if (req.user) {
+    const token = userService.refreshToken(req.user);
+    res.json({ token });
+  } else {
+    res.status(401).json({ message: "User not found" });
+  }
+};

@@ -14,6 +14,8 @@ interface AuthContextType {
   user: User | null;
   login: (token: string, user: User) => void;
   logout: () => void;
+  isSessionWarningModalOpen: boolean;
+  handleRefreshToken: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

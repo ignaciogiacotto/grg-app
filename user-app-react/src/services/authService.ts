@@ -13,3 +13,16 @@ export const login = async (
   const response = await axios.post(`${API_URL}/login`, { username, password });
   return response.data;
 };
+
+export const refreshToken = async (token: string): Promise<LoginResponse> => {
+  const response = await axios.post(
+    `${API_URL}/users/refresh-token`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};

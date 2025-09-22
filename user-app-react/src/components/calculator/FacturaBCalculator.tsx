@@ -56,11 +56,11 @@ export function FacturaBCalculator() {
                 <InputGroup>
                   <InputGroup.Text>$</InputGroup.Text>
                   <Form.Control
-                    type="number"
+                    type="text"
                     placeholder="15000"
                     value={importe}
                     onChange={(e) => setImporte(e.target.value)}
-                    autoFocus
+                    onFocus={(e) => e.target.select()}
                   />
                 </InputGroup>
               </Form.Group>
@@ -69,10 +69,11 @@ export function FacturaBCalculator() {
               <Form.Group>
                 <Form.Label>Cantidad de Unidades</Form.Label>
                 <Form.Control
-                  type="number"
+                  type="text"
                   placeholder="10"
                   value={cantidad}
                   onChange={(e) => setCantidad(e.target.value)}
+                  onFocus={(e) => e.target.select()}
                 />
               </Form.Group>
             </Col>

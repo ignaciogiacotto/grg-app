@@ -86,11 +86,11 @@ export function FacturaACalculator() {
                     <InputGroup>
                       <InputGroup.Text>$</InputGroup.Text>
                       <Form.Control
-                        type="number"
+                        type="text"
                         placeholder="100"
                         value={importe}
                         onChange={(e) => setImporte(e.target.value)}
-                        autoFocus
+                        onFocus={(e) => e.target.select()}
                       />
                     </InputGroup>
                   </Form.Group>
@@ -99,10 +99,11 @@ export function FacturaACalculator() {
                   <Form.Group>
                     <Form.Label>Cantidad de Unidades</Form.Label>
                     <Form.Control
-                      type="number"
+                      type="text"
                       placeholder="1"
                       value={cantidad}
                       onChange={(e) => setCantidad(e.target.value)}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Form.Group>
                 </Col>
@@ -131,7 +132,7 @@ export function FacturaACalculator() {
                 <Col xs={4} className="px-1">
                   <InputGroup size="sm">
                     <Form.Control
-                      type="number"
+                      type="text"
                       value={ivaRate}
                       onChange={(e) => setIvaRate(Number(e.target.value))}
                       readOnly={!isEditingRates}
@@ -157,7 +158,7 @@ export function FacturaACalculator() {
                 <Col xs={4} className="px-1">
                   <InputGroup size="sm">
                     <Form.Control
-                      type="number"
+                      type="text"
                       value={iibbRate}
                       onChange={(e) => setIibbRate(Number(e.target.value))}
                       readOnly={!isEditingRates}

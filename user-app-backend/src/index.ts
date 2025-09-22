@@ -12,9 +12,8 @@ import tagRoutes from "./routes/tagRoutes";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger';
-import { findUserByUsernameAndPassword } from "./services/userService";
+import { findUserByUsernameAndPassword, generateToken } from "./services/userService";
 import connectDB from "./config/database";
-import jwt from "jsonwebtoken";
 
 const app = express();
 const port = 4000;
@@ -45,19 +44,7 @@ app.post("/login", async (req, res) => {
   const user = await findUserByUsernameAndPassword(username, password);
 
   if (user) {
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-      },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: "3h",
-      }
-    );
+    const token = generateToken(user);
     res.json({ message: "Login successful", token });
   } else {
     res.status(401).json({ message: "Invalid credentials" });

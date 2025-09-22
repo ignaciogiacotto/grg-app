@@ -102,10 +102,10 @@ export function BebidasCalculator() {
                   <Form.Group className="mb-3">
                     <Form.Label>Importe</Form.Label>
                     <Form.Control
-                      type="number"
+                      type="text"
                       value={importe}
                       onChange={(e) => setImporte(e.target.value)}
-                      autoFocus
+                      onFocus={(e) => e.target.select()}
                     />
                   </Form.Group>
                 </Col>
@@ -113,9 +113,10 @@ export function BebidasCalculator() {
                   <Form.Group className="mb-3">
                     <Form.Label>Imp. Internos</Form.Label>
                     <Form.Control
-                      type="number"
+                      type="text"
                       value={impuestosInternos}
                       onChange={(e) => setImpuestosInternos(e.target.value)}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Form.Group>
                 </Col>
@@ -123,9 +124,10 @@ export function BebidasCalculator() {
                   <Form.Group className="mb-3">
                     <Form.Label>Descuento</Form.Label>
                     <Form.Control
-                      type="number"
+                      type="text"
                       value={descuento}
                       onChange={(e) => setDescuento(e.target.value)}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Form.Group>
                 </Col>
@@ -133,9 +135,10 @@ export function BebidasCalculator() {
                   <Form.Group className="mb-3">
                     <Form.Label>Cantidad</Form.Label>
                     <Form.Control
-                      type="number"
+                      type="text"
                       value={cantidad}
                       onChange={(e) => setCantidad(e.target.value)}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Form.Group>
                 </Col>

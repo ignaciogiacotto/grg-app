@@ -69,12 +69,12 @@ export const useExtractions = () => {
   const handleArchiveAll = async () => {
     try {
       const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "This will archive all completed extractions.",
+        title: "Estas seguro?",
+        text: "Esta accion archivara todas las solicitudes.",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Yes, archive them!",
-        cancelButtonText: "No, cancel",
+        confirmButtonText: "Si, archivarlas!",
+        cancelButtonText: "No, cancelar",
       });
 
       if (result.isConfirmed) {

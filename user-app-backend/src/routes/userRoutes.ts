@@ -205,4 +205,6 @@ router.post("/", protect, validateUser, userController.createUser);
 router.put("/:id", protect, validateUser, userController.updateUser);
 router.delete("/:id", protect, userController.deleteUser);
 
+router.post("/refresh-token", protect, userController.refreshToken);
+
 export default router;

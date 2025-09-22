@@ -1,5 +1,22 @@
 import UserModel, { User } from "../models/userModel";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+export const generateToken = (user: User) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+    },
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: "3h",
+    }
+  );
+};
 
 export const getUsers = async (page: number, pageSize: number) => {
   const skip = page * pageSize;
@@ -45,4 +62,8 @@ export const findUserByUsernameAndPassword = async (
     return null;
   }
   return user;
+};
+
+export const refreshToken = (user: User) => {
+  return generateToken(user);
 };
