@@ -27,8 +27,8 @@ const NoteModal = ({ show, onHide, note, onSave }: NoteModalProps) => {
     if (note) {
       setTitle(note.title);
       setContent(note.content);
-      setTags(note.tags.map((t: ITag) => t._id));
-      setVisibleTo(note.visibleTo.map((u: IUser) => u._id));
+      setTags(note.tags.filter(Boolean).map((t: ITag) => t._id));
+      setVisibleTo(note.visibleTo.filter(Boolean).map((u: IUser) => u._id));
     } else {
       setTitle("");
       setContent("");

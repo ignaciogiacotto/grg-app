@@ -33,4 +33,7 @@ REM Start the frontend server
 start "Frontend" cmd /c "cd user-app-react && npm run dev"
 
 echo All servers have been launched in separate windows.
-pause
+
+echo Waiting 10 seconds for close console...
+timeout /t 10 /nobreak >nul
+

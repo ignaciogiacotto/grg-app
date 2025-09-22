@@ -2,7 +2,7 @@ import { Note, INote } from '../models/noteModel';
 import { User } from '../models/userModel';
 
 export const getNotesForUser = async (userId: string) => {
-  return Note.find({ visibleTo: userId }).populate('tags').populate('creator', 'name');
+  return Note.find({ visibleTo: userId }).populate('tags').populate('creator', 'name').populate('visibleTo', 'name');
 };
 
 export const createNote = async (data: Partial<INote>) => {
