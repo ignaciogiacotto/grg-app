@@ -109,6 +109,10 @@ const Extractions: React.FC = () => {
           <ExtractionColumn
             title="Pendientes"
             extractions={pendingExtractions}
+            totalAmount={pendingExtractions.reduce(
+              (sum, extraction) => sum + extraction.amount,
+              0
+            )}
             {...columnProps}
           />
         </Col>
