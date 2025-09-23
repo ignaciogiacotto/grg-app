@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, Card, Row, Col, InputGroup, Button } from "react-bootstrap";
+import CurrencyInput from "react-currency-input-field";
 
 export function BebidasCalculator() {
   // Manual inputs
@@ -101,33 +102,44 @@ export function BebidasCalculator() {
                 <Col>
                   <Form.Group className="mb-3">
                     <Form.Label>Importe</Form.Label>
-                    <Form.Control
-                      type="text"
+                    <CurrencyInput
+                      name="importe"
                       value={importe}
-                      onChange={(e) => setImporte(e.target.value)}
+                      onValueChange={(value) => setImporte(value || "")}
                       onFocus={(e) => e.target.select()}
+                      className="form-control"
+                      intlConfig={{ locale: "es-AR", currency: "ARS" }}
+                      prefix="$"
                     />
                   </Form.Group>
                 </Col>
                 <Col>
                   <Form.Group className="mb-3">
                     <Form.Label>Imp. Internos</Form.Label>
-                    <Form.Control
-                      type="text"
+                    <CurrencyInput
+                      name="impuestosInternos"
                       value={impuestosInternos}
-                      onChange={(e) => setImpuestosInternos(e.target.value)}
+                      onValueChange={(value) =>
+                        setImpuestosInternos(value || "")
+                      }
                       onFocus={(e) => e.target.select()}
+                      className="form-control"
+                      intlConfig={{ locale: "es-AR", currency: "ARS" }}
+                      prefix="$"
                     />
                   </Form.Group>
                 </Col>
                 <Col>
                   <Form.Group className="mb-3">
                     <Form.Label>Descuento</Form.Label>
-                    <Form.Control
-                      type="text"
+                    <CurrencyInput
+                      name="descuento"
                       value={descuento}
-                      onChange={(e) => setDescuento(e.target.value)}
+                      onValueChange={(value) => setDescuento(value || "")}
                       onFocus={(e) => e.target.select()}
+                      className="form-control"
+                      intlConfig={{ locale: "es-AR", currency: "ARS" }}
+                      prefix="$"
                     />
                   </Form.Group>
                 </Col>

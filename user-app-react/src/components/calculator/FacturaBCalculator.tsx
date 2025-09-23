@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, Card, Row, Col, InputGroup, Button } from "react-bootstrap";
+import CurrencyInput from "react-currency-input-field";
 
 export function FacturaBCalculator() {
   const [importe, setImporte] = useState<number | string>("");
@@ -53,16 +54,16 @@ export function FacturaBCalculator() {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Importe Total de Factura</Form.Label>
-                <InputGroup>
-                  <InputGroup.Text>$</InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    placeholder="15000"
-                    value={importe}
-                    onChange={(e) => setImporte(e.target.value)}
-                    onFocus={(e) => e.target.select()}
-                  />
-                </InputGroup>
+                <CurrencyInput
+                  name="importe"
+                  placeholder="15000"
+                  value={importe}
+                  onValueChange={(value) => setImporte(value || "")}
+                  onFocus={(e) => e.target.select()}
+                  className="form-control"
+                  intlConfig={{ locale: "es-AR", currency: "ARS" }}
+                  prefix="$"
+                />
               </Form.Group>
             </Col>
             <Col md={6}>
@@ -74,8 +75,7 @@ export function FacturaBCalculator() {
                   value={cantidad}
                   onChange={(e) => setCantidad(e.target.value)}
                   onFocus={(e) => e.target.select()}
-                />
-              </Form.Group>
+                  />              </Form.Group>
             </Col>
           </Row>
         </Form>
