@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -11,6 +11,7 @@ import {
 } from "chart.js";
 import { useDashboard } from "../../hooks/useDashboard";
 import { Spinner } from "react-bootstrap";
+import { Eye, EyeOff } from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -39,6 +40,23 @@ const Dashboard: React.FC = () => {
   const [endDate, setEndDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
+
+  const [showTodayProfit, setShowTodayProfit] = useState(() => {
+    const saved = localStorage.getItem("showTodayProfit");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [showMonthProfit, setShowMonthProfit] = useState(() => {
+    const saved = localStorage.getItem("showMonthProfit");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("showTodayProfit", JSON.stringify(showTodayProfit));
+  }, [showTodayProfit]);
+
+  useEffect(() => {
+    localStorage.setItem("showMonthProfit", JSON.stringify(showMonthProfit));
+  }, [showMonthProfit]);
 
   const {
     chartData,
@@ -245,9 +263,24 @@ const Dashboard: React.FC = () => {
             <div className="col-md-6">
               <div className="card text-bg-success shadow-sm">
                 <div className="card-body">
-                  <h6 className="card-subtitle mb-2">Ganancia Total del Día</h6>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h6 className="card-subtitle mb-2">
+                      Ganancia Total del Día
+                    </h6>
+                    <div
+                      onClick={() => setShowTodayProfit(!showTodayProfit)}
+                      style={{ cursor: "pointer" }}>
+                      {showTodayProfit ? (
+                        <Eye size={20} />
+                      ) : (
+                        <EyeOff size={20} />
+                      )}
+                    </div>
+                  </div>
                   <h3 className="mb-0">
-                    ${todayProfit.toLocaleString("es-AR")}
+                    {showTodayProfit
+                      ? `${todayProfit.toLocaleString("es-AR")}`
+                      : "$****"}
                   </h3>
                 </div>
               </div>
@@ -255,9 +288,24 @@ const Dashboard: React.FC = () => {
             <div className="col-md-6">
               <div className="card text-bg-primary shadow-sm">
                 <div className="card-body">
-                  <h6 className="card-subtitle mb-2">Ganancia Total del Mes</h6>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h6 className="card-subtitle mb-2">
+                      Ganancia Total del Mes
+                    </h6>
+                    <div
+                      onClick={() => setShowMonthProfit(!showMonthProfit)}
+                      style={{ cursor: "pointer" }}>
+                      {showMonthProfit ? (
+                        <Eye size={20} />
+                      ) : (
+                        <EyeOff size={20} />
+                      )}
+                    </div>
+                  </div>
                   <h3 className="mb-0">
-                    ${currentMonthProfit.toLocaleString("es-AR")}
+                    {showMonthProfit
+                      ? `${currentMonthProfit.toLocaleString("es-AR")}`
+                      : "$****"}
                   </h3>
                 </div>
               </div>
