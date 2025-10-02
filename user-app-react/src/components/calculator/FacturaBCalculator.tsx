@@ -13,7 +13,8 @@ export function FacturaBCalculator() {
   const [isEditingMarkups, setIsEditingMarkups] = useState(false);
 
   const costo = useMemo(() => {
-    const numImporte = Number(importe);
+    const numImporte =
+      Number(String(importe).replace(/\./g, "").replace(",", ".")) || 0;
     const numCantidad = Number(cantidad);
     if (numCantidad === 0 || isNaN(numImporte) || isNaN(numCantidad)) return 0;
     return numImporte / numCantidad;
@@ -58,11 +59,14 @@ export function FacturaBCalculator() {
                   name="importe"
                   placeholder="15000"
                   value={importe}
-                  onValueChange={(value) => setImporte(value || "")}
+                  onValueChange={(value) => setImporte(value ?? "")}
                   onFocus={(e) => e.target.select()}
                   className="form-control"
-                  intlConfig={{ locale: "es-AR", currency: "ARS" }}
                   prefix="$"
+                  decimalSeparator=","
+                  groupSeparator="."
+                  allowDecimals={true}
+                  decimalScale={2}
                 />
               </Form.Group>
             </Col>

@@ -2,6 +2,7 @@ import { Tab, Tabs } from 'react-bootstrap';
 import { FacturaBCalculator } from "./FacturaBCalculator";
 import { FacturaACalculator } from './FacturaACalculator';
 import { BebidasCalculator } from './BebidasCalculator';
+import { Calculator } from './Calculator';
 
 export function CalculatorPage() {
   return (
@@ -16,6 +17,9 @@ export function CalculatorPage() {
         </Tab>
         <Tab eventKey="factura-b" title="Factura B">
           <FacturaBCalculator />
+        </Tab>
+        <Tab eventKey="calculator" title="Calculator">
+          <Calculator />
         </Tab>
       </Tabs>
     </div>

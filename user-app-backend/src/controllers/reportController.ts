@@ -1,7 +1,7 @@
 
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { getDailyProfit, getEnvelopeSummary } from '../services/reportService';
+import { getDailyProfit, getEnvelopeSummary, getKioscoProfitByCategory } from '../services/reportService';
 
 export const getDailyProfitReport = async (req: AuthRequest, res: Response) => {
   try {
@@ -10,6 +10,16 @@ export const getDailyProfitReport = async (req: AuthRequest, res: Response) => {
     res.status(200).json(dailyProfit);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching daily profit report', error });
+  }
+};
+
+export const getKioscoProfitByCategoryReport = async (req: AuthRequest, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const kioscoProfitByCategory = await getKioscoProfitByCategory(startDate as string, endDate as string);
+    res.status(200).json(kioscoProfitByCategory);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching kiosco profit by category report', error });
   }
 };
 

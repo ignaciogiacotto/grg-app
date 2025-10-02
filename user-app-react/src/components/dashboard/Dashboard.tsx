@@ -49,6 +49,8 @@ const Dashboard: React.FC = () => {
     const saved = localStorage.getItem("showMonthProfit");
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [showKioscoProfitByCategory, setShowKioscoProfitByCategory] =
+    useState(false);
 
   useEffect(() => {
     localStorage.setItem("showTodayProfit", JSON.stringify(showTodayProfit));
@@ -68,6 +70,8 @@ const Dashboard: React.FC = () => {
     rangeProfit,
     rangeProfitKiosco,
     rangeProfitPf,
+    kioscoProfitByCategory,
+    fetchKioscoProfitByCategory,
   } = useDashboard(period, year, month, week, selectedDate, startDate, endDate);
 
   const options = {
@@ -371,47 +375,124 @@ const Dashboard: React.FC = () => {
                 {renderFilters()}
               </div>
               {period === "range" && (
-  <div className="mt-3">
-    <h4 className="mb-3">Ganancias del Rango</h4>
-    <div className="row g-3">
-      <div className="col-md-4">
-        <div className="card text-bg-info shadow-sm">
-          <div className="card-body">
-            <h6 className="card-subtitle mb-2">Ganancia Kiosco</h6>
-            <h3 className="mb-0">
-              ${rangeProfitKiosco.toLocaleString("es-AR")}
-            </h3>
-          </div>
-        </div>
-      </div>
+                <div className="mt-3">
+                  <h4 className="mb-3">Ganancias del Rango</h4>
+                  <div className="row g-3">
+                    <div className="col-md-4">
+                      <div
+                        className="card text-bg-info shadow-sm"
+                        onClick={() => {
+                          if (period === "range") {
+                            fetchKioscoProfitByCategory();
+                            setShowKioscoProfitByCategory(
+                              !showKioscoProfitByCategory
+                            );
+                          }
+                        }}
+                        style={{
+                          cursor: period === "range" ? "pointer" : "default",
+                        }}>
+                        <div className="card-body">
+                          <h6 className="card-subtitle mb-2">
+                            Ganancia Kiosco
+                          </h6>
+                          <h3 className="mb-0">
+                            ${rangeProfitKiosco.toLocaleString("es-AR")}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
 
-      <div className="col-md-4">
-        <div className="card text-bg-danger shadow-sm">
-          <div className="card-body">
-            <h6 className="card-subtitle mb-2">Ganancia PF</h6>
-            <h3 className="mb-0">
-              ${rangeProfitPf.toLocaleString("es-AR")}
-            </h3>
-          </div>
-        </div>
-      </div>
+                    <div className="col-md-4">
+                      <div className="card text-bg-danger shadow-sm">
+                        <div className="card-body">
+                          <h6 className="card-subtitle mb-2">Ganancia PF</h6>
+                          <h3 className="mb-0">
+                            ${rangeProfitPf.toLocaleString("es-AR")}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
 
-      <div className="col-md-4">
-        <div className="card text-bg-warning shadow-sm">
-          <div className="card-body">
-            <h6 className="card-subtitle mb-2">Ganancia Total</h6>
-            <h3 className="mb-0">
-              ${rangeProfit.toLocaleString("es-AR")}
-            </h3>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+                    <div className="col-md-4">
+                      <div className="card text-bg-warning shadow-sm">
+                        <div className="card-body">
+                          <h6 className="card-subtitle mb-2">Ganancia Total</h6>
+                          <h3 className="mb-0">
+                            ${rangeProfit.toLocaleString("es-AR")}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-
-
+              {showKioscoProfitByCategory && kioscoProfitByCategory && (
+                <div className="mt-3">
+                  <h4 className="mb-3">Ganancias por Categoría</h4>
+                  <div className="row g-3">
+                    <div className="col-md-3 d-flex">
+                      <div className="card text-bg-light shadow-sm w-100 h-100">
+                        <div className="card-body">
+                          <h6 className="card-subtitle mb-2">
+                            Ganancia Factura B
+                          </h6>
+                          <h3 className="mb-0">
+                            $
+                            {kioscoProfitByCategory.facturaB.toLocaleString(
+                              "es-AR"
+                            )}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-3 d-flex">
+                      <div className="card text-bg-light shadow-sm w-100 h-100">
+                        <div className="card-body">
+                          <h6 className="card-subtitle mb-2">
+                            Ganancia Remitos
+                          </h6>
+                          <h3 className="mb-0">
+                            $
+                            {kioscoProfitByCategory.remitos.toLocaleString(
+                              "es-AR"
+                            )}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-3 d-flex">
+                      <div className="card text-bg-light shadow-sm w-100 h-100">
+                        <div className="card-body">
+                          <h6 className="card-subtitle mb-2">Cyber</h6>
+                          <h3 className="mb-0">
+                            $
+                            {kioscoProfitByCategory.cyber.toLocaleString(
+                              "es-AR"
+                            )}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-3 d-flex">
+                      <div className="card text-bg-light shadow-sm w-100 h-100">
+                        <div className="card-body">
+                          <h6 className="card-subtitle mb-2">
+                            Cargas Virtuales
+                          </h6>
+                          <h3 className="mb-0">
+                            $
+                            {kioscoProfitByCategory.cargasVirtuales.toLocaleString(
+                              "es-AR"
+                            )}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

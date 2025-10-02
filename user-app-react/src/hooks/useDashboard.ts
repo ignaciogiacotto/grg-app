@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getDailyProfitReport,
   DailyProfit,
   getEnvelopeSummary,
   EnvelopeSummary,
+  getKioscoProfitByCategoryReport,
+  KioscoProfitByCategory,
 } from "../services/reportService";
 
 type Period = "day" | "week" | "month" | "year" | "range";
@@ -27,6 +29,17 @@ export const useDashboard = (
   const [rangeProfitKiosco, setRangeProfitKiosco] = useState<number>(0);
   const [rangeProfitPf, setRangeProfitPf] = useState<number>(0);
   const [envelopes, setEnvelopes] = useState<EnvelopeSummary | null>(null);
+  const [kioscoProfitByCategory, setKioscoProfitByCategory] =
+    useState<KioscoProfitByCategory | null>(null);
+
+  const fetchKioscoProfitByCategory = useCallback(async () => {
+    try {
+      const data = await getKioscoProfitByCategoryReport(startDate, endDate);
+      setKioscoProfitByCategory(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [startDate, endDate]);
 
   // --- LOGIC FOR SUMMARY CARDS (Today & Current Month) ---
   useEffect(() => {
@@ -87,6 +100,9 @@ export const useDashboard = (
             setRangeProfitKiosco(rangeKioscoTotal);
             setRangeProfitPf(rangePfTotal);
             setRangeProfit(rangeKioscoTotal + rangePfTotal);
+            fetchKioscoProfitByCategory();
+          } else {
+            setKioscoProfitByCategory(null);
           }
           const labels = data.map((d: DailyProfit) =>
             new Date(d.date).toLocaleDateString("es-AR", { timeZone: "UTC" })
@@ -118,7 +134,16 @@ export const useDashboard = (
       }
     };
     fetchData();
-  }, [period, year, month, week, selectedDate, startDate, endDate]);
+  }, [
+    period,
+    year,
+    month,
+    week,
+    selectedDate,
+    startDate,
+    endDate,
+    fetchKioscoProfitByCategory,
+  ]);
 
   // --- RETURN ALL STATE VALUES ---
   return {
@@ -131,5 +156,7 @@ export const useDashboard = (
     rangeProfit,
     rangeProfitKiosco,
     rangeProfitPf,
+    kioscoProfitByCategory,
+    fetchKioscoProfitByCategory,
   };
 };

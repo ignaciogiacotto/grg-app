@@ -1,7 +1,7 @@
 
 import express from 'express';
 import { protect, authorize } from '../middlewares/authMiddleware';
-import { getDailyProfitReport, getEnvelopeSummaryReport } from '../controllers/reportController';
+import { getDailyProfitReport, getEnvelopeSummaryReport, getKioscoProfitByCategoryReport } from '../controllers/reportController';
 import { Role } from "../models/userModel";
 
 const router = express.Router();
@@ -14,6 +14,16 @@ router.get(
   protect,
   authorize(Role.Admin, Role.Manager),
   getDailyProfitReport
+);
+
+// @desc   Get kiosco profit by category report
+// @route  GET /api/reports/kiosco-profit-by-category
+// @access Private (Admin, Manager)
+router.get(
+  '/kiosco-profit-by-category',
+  protect,
+  authorize(Role.Admin, Role.Manager),
+  getKioscoProfitByCategoryReport
 );
 
 // @desc   Get envelope summary

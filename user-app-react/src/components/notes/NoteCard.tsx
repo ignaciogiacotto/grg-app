@@ -15,7 +15,10 @@ const NoteCard = ({ note, onEdit, onDelete }: NoteCardProps) => {
       <Card.Body className="d-flex flex-column">
         <div className="mb-2">
           <Card.Title>{note.title}</Card.Title>
-          <Card.Text style={{ whiteSpace: "pre-line" }}>{note.content}</Card.Text>
+          <div
+            style={{ whiteSpace: "pre-line" }}
+            dangerouslySetInnerHTML={{ __html: note.content }}
+          />
         </div>
 
         <div className="mb-2 mt-auto">

@@ -22,7 +22,8 @@ export function FacturaACalculator() {
 
   const { costoUnitario, iva, iibb, rg5329, costoConImpuestos } =
     useMemo(() => {
-      const numImporte = Number(importe) || 0;
+      const numImporte =
+        Number(String(importe).replace(/\./g, "").replace(",", ".")) || 0;
       const numCantidad = Number(cantidad) || 1;
 
       const ivaAmount = numImporte * (ivaRate / 100);
@@ -88,11 +89,14 @@ export function FacturaACalculator() {
                       name="importe"
                       placeholder="100"
                       value={importe}
-                      onValueChange={(value) => setImporte(value || "")}
+                      onValueChange={(value) => setImporte(value ?? "")}
                       onFocus={(e) => e.target.select()}
                       className="form-control"
-                      intlConfig={{ locale: "es-AR", currency: "ARS" }}
                       prefix="$"
+                      decimalSeparator=","
+                      groupSeparator="."
+                      allowDecimals={true}
+                      decimalScale={2}
                     />
                   </Form.Group>
                 </Col>
@@ -339,3 +343,4 @@ export function FacturaACalculator() {
     </Card>
   );
 }
+

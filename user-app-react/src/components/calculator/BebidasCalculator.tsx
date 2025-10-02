@@ -25,10 +25,15 @@ export function BebidasCalculator() {
 
   const { costoUnitario, subtotalPositivo, subtotalNegativo, costoTotal } =
     useMemo(() => {
-      const numImporte = Number(importe) || 0;
+      const numImporte =
+        Number(String(importe).replace(/\./g, "").replace(",", ".")) || 0;
       const numCantidad = Number(cantidad) || 1;
-      const numImpInternos = Number(impuestosInternos) || 0;
-      const numDescuento = Number(descuento) || 0;
+      const numImpInternos =
+        Number(
+          String(impuestosInternos).replace(/\./g, "").replace(",", ".")
+        ) || 0;
+      const numDescuento =
+        Number(String(descuento).replace(/\./g, "").replace(",", ".")) || 0;
 
       const ivaAmount = numImporte * (ivaRate / 100);
       const iibbBase = numImporte - numDescuento + numImpInternos;
@@ -105,11 +110,14 @@ export function BebidasCalculator() {
                     <CurrencyInput
                       name="importe"
                       value={importe}
-                      onValueChange={(value) => setImporte(value || "")}
+                      onValueChange={(value) => setImporte(value ?? "")}                      
                       onFocus={(e) => e.target.select()}
                       className="form-control"
-                      intlConfig={{ locale: "es-AR", currency: "ARS" }}
                       prefix="$"
+                      decimalSeparator=","
+                      groupSeparator="."
+                      allowDecimals={true}
+                      decimalScale={2}
                     />
                   </Form.Group>
                 </Col>
@@ -119,13 +127,14 @@ export function BebidasCalculator() {
                     <CurrencyInput
                       name="impuestosInternos"
                       value={impuestosInternos}
-                      onValueChange={(value) =>
-                        setImpuestosInternos(value || "")
-                      }
+                      onValueChange={(value) => setImpuestosInternos(value ?? "")}
                       onFocus={(e) => e.target.select()}
                       className="form-control"
-                      intlConfig={{ locale: "es-AR", currency: "ARS" }}
                       prefix="$"
+                      decimalSeparator=","
+                      groupSeparator="."
+                      allowDecimals={true}
+                      decimalScale={2}
                     />
                   </Form.Group>
                 </Col>
@@ -135,11 +144,14 @@ export function BebidasCalculator() {
                     <CurrencyInput
                       name="descuento"
                       value={descuento}
-                      onValueChange={(value) => setDescuento(value || "")}
+                      onValueChange={(value) => setDescuento(value ?? "")}
                       onFocus={(e) => e.target.select()}
                       className="form-control"
-                      intlConfig={{ locale: "es-AR", currency: "ARS" }}
                       prefix="$"
+                      decimalSeparator=","
+                      groupSeparator="."
+                      allowDecimals={true}
+                      decimalScale={2}
                     />
                   </Form.Group>
                 </Col>
@@ -369,4 +381,4 @@ export function BebidasCalculator() {
       </Card.Body>
     </Card>
   );
-}
+};

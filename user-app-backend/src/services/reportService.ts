@@ -145,6 +145,38 @@ export const getDailyProfit = async (
   return result;
 };
 
+export const getKioscoProfitByCategory = async (
+  startDate: string,
+  endDate: string
+) => {
+  const start = startOfDay(new Date(startDate));
+  const end = endOfDay(new Date(endDate));
+
+  const kioscoData = await CierreKiosco.find({
+    date: {
+      $gte: start,
+      $lte: end,
+    },
+  });
+
+  const initialProfit = {
+    facturaB: 0,
+    remitos: 0,
+    cyber: 0,
+    cargasVirtuales: 0,
+  };
+
+  const totalProfit = kioscoData.reduce((acc, cierre) => {
+    acc.facturaB += cierre.fac1;
+    acc.remitos += cierre.fac2;
+    acc.cyber += cierre.cyber;
+    acc.cargasVirtuales += cierre.cargVirt;
+    return acc;
+  }, initialProfit);
+
+  return totalProfit;
+};
+
 export const getEnvelopeSummary = async () => {
   const todayStart = startOfDay(new Date());
   const todayEnd = endOfDay(new Date());

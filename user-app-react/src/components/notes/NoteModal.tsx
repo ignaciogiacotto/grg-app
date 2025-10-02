@@ -1,5 +1,7 @@
 import { Modal, Button, Form } from "react-bootstrap";
 import { useEffect, useState } from "react";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import noteService from "../../services/noteService";
 import tagService from "../../services/tagService";
 import { getUsers } from "../../services/userService";
@@ -97,11 +99,10 @@ const NoteModal = ({ show, onHide, note, onSave }: NoteModalProps) => {
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Contenido</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={5}
+            <ReactQuill
+              theme="snow"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={setContent}
             />
           </Form.Group>
           <Form.Group className="mb-3">
