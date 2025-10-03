@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, Card, Row, Col, InputGroup, Button } from "react-bootstrap";
-import CurrencyInput from "react-currency-input-field";
+
 
 export function BebidasCalculator() {
   // Manual inputs
@@ -25,15 +25,10 @@ export function BebidasCalculator() {
 
   const { costoUnitario, subtotalPositivo, subtotalNegativo, costoTotal } =
     useMemo(() => {
-      const numImporte =
-        Number(String(importe).replace(/\./g, "").replace(",", ".")) || 0;
+      const numImporte = Number(String(importe).replace(",", ".")) || 0;
       const numCantidad = Number(cantidad) || 1;
-      const numImpInternos =
-        Number(
-          String(impuestosInternos).replace(/\./g, "").replace(",", ".")
-        ) || 0;
-      const numDescuento =
-        Number(String(descuento).replace(/\./g, "").replace(",", ".")) || 0;
+      const numImpInternos = Number(String(impuestosInternos).replace(",", ".")) || 0;
+      const numDescuento = Number(String(descuento).replace(",", ".")) || 0;
 
       const ivaAmount = numImporte * (ivaRate / 100);
       const iibbBase = numImporte - numDescuento + numImpInternos;
@@ -74,87 +69,92 @@ export function BebidasCalculator() {
       isIibbEnabled,
     ]);
 
-  const venta50 = useMemo(
-    () => costoUnitario * (1 + markup50 / 100),
-    [costoUnitario, markup50]
-  );
-  const venta70 = useMemo(
-    () => costoUnitario * (1 + markup70 / 100),
-    [costoUnitario, markup70]
-  );
-  const venta100 = useMemo(
-    () => costoUnitario * (1 + markup100 / 100),
-    [costoUnitario, markup100]
-  );
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-    }).format(value);
-  };
-
-  return (
-    <Card bg="dark" text="white">
-      <Card.Header>
-        <Card.Title as="h5">Calculadora de Precios - Bebidas</Card.Title>
-      </Card.Header>
-      <Card.Body>
-        <Row>
-          <Col md={8}>
-            <Form>
-              <Row>
-                <Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Importe</Form.Label>
-                    <CurrencyInput
-                      name="importe"
-                      value={importe}
-                      onValueChange={(value) => setImporte(value ?? "")}                      
-                      onFocus={(e) => e.target.select()}
-                      className="form-control"
-                      prefix="$"
-                      decimalSeparator=","
-                      groupSeparator="."
-                      allowDecimals={true}
-                      decimalScale={2}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Imp. Internos</Form.Label>
-                    <CurrencyInput
-                      name="impuestosInternos"
-                      value={impuestosInternos}
-                      onValueChange={(value) => setImpuestosInternos(value ?? "")}
-                      onFocus={(e) => e.target.select()}
-                      className="form-control"
-                      prefix="$"
-                      decimalSeparator=","
-                      groupSeparator="."
-                      allowDecimals={true}
-                      decimalScale={2}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Descuento</Form.Label>
-                    <CurrencyInput
-                      name="descuento"
-                      value={descuento}
-                      onValueChange={(value) => setDescuento(value ?? "")}
-                      onFocus={(e) => e.target.select()}
-                      className="form-control"
-                      prefix="$"
-                      decimalSeparator=","
-                      groupSeparator="."
-                      allowDecimals={true}
-                      decimalScale={2}
-                    />
-                  </Form.Group>
-                </Col>
+    const handleInputChange = (
+      e: React.ChangeEvent<HTMLInputElement>,
+      setter: (value: number | string) => void
+    ) => {
+      const value = e.target.value;
+      // Allow only numbers and one decimal separator ("." or ",")
+      const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
+      const parts = sanitizedValue.split(".");
+      if (parts.length > 2) {
+        // More than one decimal separator, ignore the last one
+        return;
+      }
+      setter(sanitizedValue);
+    };
+  
+    const venta50 = useMemo(
+      () => costoUnitario * (1 + markup50 / 100),
+      [costoUnitario, markup50]
+    );
+    const venta70 = useMemo(
+      () => costoUnitario * (1 + markup70 / 100),
+      [costoUnitario, markup70]
+    );
+    const venta100 = useMemo(
+      () => costoUnitario * (1 + markup100 / 100),
+      [costoUnitario, markup100]
+    );
+  
+    const formatCurrency = (value: number) => {
+      return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+      }).format(value);
+    };
+  
+    return (
+      <Card bg="dark" text="white">
+        <Card.Header>
+          <Card.Title as="h5">Calculadora de Precios - Bebidas</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={8}>
+              <Form>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Importe</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="importe"
+                        value={importe}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange(e, setImporte)
+                        }
+                        onFocus={(e) => e.target.select()}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Imp. Internos</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="impuestosInternos"
+                        value={impuestosInternos}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange(e, setImpuestosInternos)
+                        }
+                        onFocus={(e) => e.target.select()}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Descuento</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="descuento"
+                        value={descuento}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange(e, setDescuento)
+                        }
+                        onFocus={(e) => e.target.select()}
+                      />
+                    </Form.Group>                </Col>
                 <Col>
                   <Form.Group className="mb-3">
                     <Form.Label>Cantidad</Form.Label>

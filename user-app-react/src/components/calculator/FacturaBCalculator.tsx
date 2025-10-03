@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, Card, Row, Col, InputGroup, Button } from "react-bootstrap";
-import CurrencyInput from "react-currency-input-field";
+
 
 export function FacturaBCalculator() {
   const [importe, setImporte] = useState<number | string>("");
@@ -12,64 +12,74 @@ export function FacturaBCalculator() {
   const [markup100, setMarkup100] = useState(100);
   const [isEditingMarkups, setIsEditingMarkups] = useState(false);
 
-  const costo = useMemo(() => {
-    const numImporte =
-      Number(String(importe).replace(/\./g, "").replace(",", ".")) || 0;
-    const numCantidad = Number(cantidad);
-    if (numCantidad === 0 || isNaN(numImporte) || isNaN(numCantidad)) return 0;
-    return numImporte / numCantidad;
-  }, [importe, cantidad]);
-
-  const venta50 = useMemo(
-    () => costo * (1 + markup50 / 100),
-    [costo, markup50]
-  );
-  const venta70 = useMemo(
-    () => costo * (1 + markup70 / 100),
-    [costo, markup70]
-  );
-  const venta100 = useMemo(
-    () => costo * (1 + markup100 / 100),
-    [costo, markup100]
-  );
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-    }).format(value);
-  };
-
-  return (
-    <Card bg="dark" text="white">
-      <Card.Header>
-        <Card.Title as="h5">Calculadora de Precios - Factura B</Card.Title>
-      </Card.Header>
-      <Card.Body>
-        <Card.Text>
-          Ingresa el importe total y la cantidad de unidades de la factura para
-          calcular el costo unitario y los precios de venta sugeridos.
-        </Card.Text>
-        <Form>
-          <Row className="mb-4">
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Importe Total de Factura</Form.Label>
-                <CurrencyInput
-                  name="importe"
-                  placeholder="15000"
-                  value={importe}
-                  onValueChange={(value) => setImporte(value ?? "")}
-                  onFocus={(e) => e.target.select()}
-                  className="form-control"
-                  prefix="$"
-                  decimalSeparator=","
-                  groupSeparator="."
-                  allowDecimals={true}
-                  decimalScale={2}
-                />
-              </Form.Group>
-            </Col>
+    const costo = useMemo(() => {
+      const numImporte = Number(String(importe).replace(",", ".")) || 0;
+      const numCantidad = Number(cantidad);
+      if (numCantidad === 0 || isNaN(numImporte) || isNaN(numCantidad)) return 0;
+      return numImporte / numCantidad;
+    }, [importe, cantidad]);
+  
+    const handleInputChange = (
+      e: React.ChangeEvent<HTMLInputElement>,
+      setter: (value: number | string) => void
+    ) => {
+      const value = e.target.value;
+      // Allow only numbers and one decimal separator ("." or ",")
+      const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
+      const parts = sanitizedValue.split(".");
+      if (parts.length > 2) {
+        // More than one decimal separator, ignore the last one
+        return;
+      }
+      setter(sanitizedValue);
+    };
+  
+    const venta50 = useMemo(
+      () => costo * (1 + markup50 / 100),
+      [costo, markup50]
+    );
+    const venta70 = useMemo(
+      () => costo * (1 + markup70 / 100),
+      [costo, markup70]
+    );
+    const venta100 = useMemo(
+      () => costo * (1 + markup100 / 100),
+      [costo, markup100]
+    );
+  
+    const formatCurrency = (value: number) => {
+      return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+      }).format(value);
+    };
+  
+    return (
+      <Card bg="dark" text="white">
+        <Card.Header>
+          <Card.Title as="h5">Calculadora de Precios - Factura B</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Card.Text>
+            Ingresa el importe total y la cantidad de unidades de la factura para
+            calcular el costo unitario y los precios de venta sugeridos.
+          </Card.Text>
+          <Form>
+            <Row className="mb-4">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Importe Total de Factura</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="importe"
+                    placeholder="15000"
+                    value={importe}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleInputChange(e, setImporte)
+                    }
+                    onFocus={(e) => e.target.select()}
+                  />
+                </Form.Group>            </Col>
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Cantidad de Unidades</Form.Label>

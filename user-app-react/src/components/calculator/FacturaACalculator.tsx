@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, Card, Row, Col, InputGroup, Button } from "react-bootstrap";
-import CurrencyInput from "react-currency-input-field";
+
 
 export function FacturaACalculator() {
   // State for calculator inputs
@@ -20,86 +20,96 @@ export function FacturaACalculator() {
   const [markup100, setMarkup100] = useState(100);
   const [isEditingMarkups, setIsEditingMarkups] = useState(false);
 
-  const { costoUnitario, iva, iibb, rg5329, costoConImpuestos } =
-    useMemo(() => {
-      const numImporte =
-        Number(String(importe).replace(/\./g, "").replace(",", ".")) || 0;
-      const numCantidad = Number(cantidad) || 1;
-
-      const ivaAmount = numImporte * (ivaRate / 100);
-      const iibbAmount = numImporte * (iibbRate / 100);
-      const rg5329Amount = isRg5329Enabled
-        ? numImporte * (rg5329Rate / 100)
-        : 0;
-      const totalCostWithTaxes =
-        numImporte + ivaAmount + iibbAmount + rg5329Amount;
-
-      const finalUnitCost =
-        totalCostWithTaxes > 0 && numCantidad > 0
-          ? totalCostWithTaxes / numCantidad
+    const { costoUnitario, iva, iibb, rg5329, costoConImpuestos } =
+      useMemo(() => {
+        const numImporte = Number(String(importe).replace(",", ".")) || 0;
+        const numCantidad = Number(cantidad) || 1;
+  
+        const ivaAmount = numImporte * (ivaRate / 100);
+        const iibbAmount = numImporte * (iibbRate / 100);
+        const rg5329Amount = isRg5329Enabled
+          ? numImporte * (rg5329Rate / 100)
           : 0;
-
-      return {
-        costoUnitario: finalUnitCost,
-        iva: ivaAmount,
-        iibb: iibbAmount,
-        rg5329: rg5329Amount,
-        costoConImpuestos: totalCostWithTaxes,
-      };
-    }, [importe, cantidad, ivaRate, iibbRate, rg5329Rate, isRg5329Enabled]);
-
-  const venta50 = useMemo(
-    () => costoUnitario * (1 + markup50 / 100),
-    [costoUnitario, markup50]
-  );
-  const venta70 = useMemo(
-    () => costoUnitario * (1 + markup70 / 100),
-    [costoUnitario, markup70]
-  );
-  const venta100 = useMemo(
-    () => costoUnitario * (1 + markup100 / 100),
-    [costoUnitario, markup100]
-  );
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-    }).format(value);
-  };
-
-  return (
-    <Card bg="dark" text="white">
-      <Card.Header>
-        <Card.Title as="h5">Calculadora de Precios - Factura A</Card.Title>
-      </Card.Header>
-      <Card.Body>
-        <Row>
-          <Col md={8}>
-            <Card.Text>
-              Ingresa el importe neto de la factura. Se calcularán los impuestos
-              para obtener el costo final.
-            </Card.Text>
-            <Form>
-              <Row className="mb-2">
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label>Importe Neto (sin impuestos)</Form.Label>
-                    <CurrencyInput
-                      name="importe"
-                      placeholder="100"
-                      value={importe}
-                      onValueChange={(value) => setImporte(value ?? "")}
-                      onFocus={(e) => e.target.select()}
-                      className="form-control"
-                      prefix="$"
-                      decimalSeparator=","
-                      groupSeparator="."
-                      allowDecimals={true}
-                      decimalScale={2}
-                    />
-                  </Form.Group>
-                </Col>
+        const totalCostWithTaxes =
+          numImporte + ivaAmount + iibbAmount + rg5329Amount;
+  
+        const finalUnitCost =
+          totalCostWithTaxes > 0 && numCantidad > 0
+            ? totalCostWithTaxes / numCantidad
+            : 0;
+  
+        return {
+          costoUnitario: finalUnitCost,
+          iva: ivaAmount,
+          iibb: iibbAmount,
+          rg5329: rg5329Amount,
+          costoConImpuestos: totalCostWithTaxes,
+        };
+      }, [importe, cantidad, ivaRate, iibbRate, rg5329Rate, isRg5329Enabled]);
+  
+    const handleInputChange = (
+      e: React.ChangeEvent<HTMLInputElement>,
+      setter: (value: number | string) => void
+    ) => {
+      const value = e.target.value;
+      // Allow only numbers and one decimal separator ("." or ",")
+      const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
+      const parts = sanitizedValue.split(".");
+      if (parts.length > 2) {
+        // More than one decimal separator, ignore the last one
+        return;
+      }
+      setter(sanitizedValue);
+    };
+  
+    const venta50 = useMemo(
+      () => costoUnitario * (1 + markup50 / 100),
+      [costoUnitario, markup50]
+    );
+    const venta70 = useMemo(
+      () => costoUnitario * (1 + markup70 / 100),
+      [costoUnitario, markup70]
+    );
+    const venta100 = useMemo(
+      () => costoUnitario * (1 + markup100 / 100),
+      [costoUnitario, markup100]
+    );
+  
+    const formatCurrency = (value: number) => {
+      return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+      }).format(value);
+    };
+  
+    return (
+      <Card bg="dark" text="white">
+        <Card.Header>
+          <Card.Title as="h5">Calculadora de Precios - Factura A</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={8}>
+              <Card.Text>
+                Ingresa el importe neto de la factura. Se calcularán los impuestos
+                para obtener el costo final.
+              </Card.Text>
+              <Form>
+                <Row className="mb-2">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Importe Neto (sin impuestos)</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="importe"
+                        placeholder="100"
+                        value={importe}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange(e, setImporte)
+                        }
+                        onFocus={(e) => e.target.select()}
+                      />
+                    </Form.Group>                </Col>
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Cantidad de Unidades</Form.Label>
