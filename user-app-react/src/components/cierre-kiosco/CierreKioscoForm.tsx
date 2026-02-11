@@ -81,7 +81,7 @@ export const CierreKioscoForm = () => {
             <div className="card-header bg-primary text-white">
               <h5 className="mb-0">Ingresos</h5>
             </div>
-            <div className="card-body">
+            <div className="card-body bg-primary-subtle">
               <div className="mb-2">
                 <label htmlFor="fac1" className="form-label">
                   Ganancia Factura B
@@ -167,7 +167,7 @@ export const CierreKioscoForm = () => {
             <div className="card-header bg-secondary text-white">
               <h5 className="mb-0">Cigarrillos</h5>
             </div>
-            <div className="card-body">
+            <div className="card-body bg-secondary-subtle">
               {/* Factura B */}
               <h6 className="fw-bold">Factura B</h6>
               <div className="row g-3 mb-3">

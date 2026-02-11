@@ -1,8 +1,11 @@
-import { Note, INote } from '../models/noteModel';
-import { User } from '../models/userModel';
+import { Types } from "mongoose";
+import { Note, INote } from "../models/noteModel";
 
 export const getNotesForUser = async (userId: string) => {
-  return Note.find({ visibleTo: userId }).populate('tags').populate('creator', 'name').populate('visibleTo', 'name');
+  return Note.find({ visibleTo: new Types.ObjectId(userId) })
+    .populate("tags")
+    .populate("creator", "name")
+    .populate("visibleTo", "name");
 };
 
 export const createNote = async (data: Partial<INote>) => {

@@ -53,11 +53,20 @@ export function FacturaBCalculator() {
         currency: "ARS",
       }).format(value);
     };
+
+  const handleLimpiar = () => {
+    setImporte("");
+    setCantidad(1);
+  };
   
     return (
       <Card bg="dark" text="white">
-        <Card.Header>
-          <Card.Title as="h5">Calculadora de Precios - Factura B</Card.Title>
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <Card.Title as="h5" className="mb-0">Calculadora de Precios - Factura B</Card.Title>
+          <Button variant="outline-light" size="sm" onClick={handleLimpiar} title="Borrar importe y cantidad">
+            <i className="bi bi-arrow-counterclockwise me-1"></i>
+            Limpiar
+          </Button>
         </Card.Header>
         <Card.Body>
           <Card.Text>

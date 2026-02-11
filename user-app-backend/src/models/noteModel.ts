@@ -1,11 +1,11 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
 export interface INote extends Document {
   title: string;
-  content: string;
-  creator: Schema.Types.ObjectId;
-  tags: Schema.Types.ObjectId[];
-  visibleTo: Schema.Types.ObjectId[];
+  content:string;
+  creator: Types.ObjectId;
+  tags: Types.ObjectId[];
+  visibleTo: Types.ObjectId[];
 }
 
 const noteSchema = new Schema(

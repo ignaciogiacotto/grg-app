@@ -100,32 +100,47 @@ export function Calculator() {
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key >= "0" && event.key <= "9") {
+      event.preventDefault();
       inputDigit(event.key);
+      return;
     }
     if (event.key === "." || event.key === ",") {
+      event.preventDefault();
       inputDecimal();
+      return;
     }
     if (event.key === "+" || event.key === "-" || event.key === "*" || event.key === "/") {
+      event.preventDefault();
       performOperation(event.key);
+      return;
     }
     if (event.key === "Enter" || event.key === "=") {
+      event.preventDefault();
       performOperation("=");
+      return;
     }
     if (event.key === "Backspace") {
+      event.preventDefault();
       setDisplayValue(displayValue.slice(0, -1) || "0");
+      return;
     }
-    if (event.key === "Escape") {
+    if (event.key === "Escape" || event.key === "c" || event.key === "C") {
+      event.preventDefault();
       clearDisplay();
+      return;
     }
     if (event.key === "%") {
+      event.preventDefault();
       handlePercent();
     }
   };
 
   const handleClick = (action: () => void) => {
     return (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.currentTarget.blur();
       action();
+      e.currentTarget.blur();
+      // Devolver el foco a la card para seguir usando el teclado sin hacer click de nuevo
+      setTimeout(() => cardRef.current?.focus(), 0);
     };
   };
 
@@ -138,7 +153,10 @@ export function Calculator() {
         <div className="mx-auto" style={{ maxWidth: "400px" }}>
           <div 
             className="bg-secondary text-white text-end p-2 mb-3 rounded d-flex flex-column justify-content-center"
-            style={{ height: "80px" }}
+            style={{ height: "80px", cursor: "pointer" }}
+            onClick={() => cardRef.current?.focus()}
+            role="application"
+            aria-label="Pantalla de la calculadora. Haz clic o usa el teclado para operar."
           >
             <div style={{ fontSize: "0.75em", color: "#aaa", lineHeight: "1" }}>{expression || " "}</div>
             <div style={{ fontSize: "1.5em", lineHeight: "1.5" }}>{displayValue}</div>

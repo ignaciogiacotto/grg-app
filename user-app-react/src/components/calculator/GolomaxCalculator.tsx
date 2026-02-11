@@ -2,21 +2,21 @@ import { useState, useMemo } from "react";
 import { Form, Card, Row, Col, InputGroup, Button, Collapse } from "react-bootstrap";
 
 
-export function BebidasCalculator() {
-  // Manual inputs
+export function GolomaxCalculator() {
+  // State for calculator inputs
   const [importe, setImporte] = useState<number | string>("");
   const [cantidad, setCantidad] = useState<number | string>(1);
-  const [impuestosInternos, setImpuestosInternos] = useState<number | string>(
-    ""
-  );
-  const [descuento, setDescuento] = useState<number | string>("");
+  const [impuestosInternos, setImpuestosInternos] = useState<number | string>("");
 
-  // Tax rates and controls
+  // State for editable tax rates
   const [ivaRate, setIvaRate] = useState<number>(21);
   const [iibbRate, setIibbRate] = useState<number>(4);
+  const [rg5329Rate, setRg5329Rate] = useState<number>(3);
   const [isEditingRates, setIsEditingRates] = useState(false);
-  const [isIibbEnabled, setIsIibbEnabled] = useState(false);
+  const [isRg5329Enabled, setIsRg5329Enabled] = useState(false);
   const [showTaxes, setShowTaxes] = useState(true);
+  const [isCashDiscountEnabled, setIsCashDiscountEnabled] = useState(true);
+
 
   // State for editable markups
   const [markup50, setMarkup50] = useState(50);
@@ -24,62 +24,49 @@ export function BebidasCalculator() {
   const [markup100, setMarkup100] = useState(100);
   const [isEditingMarkups, setIsEditingMarkups] = useState(false);
 
-  const { costoUnitario, subtotalPositivo, subtotalNegativo, costoTotal } =
-    useMemo(() => {
-      const numImporte = Number(String(importe).replace(",", ".")) || 0;
-      const numCantidad = Number(cantidad) || 1;
-      const numImpInternos = Number(String(impuestosInternos).replace(",", ".")) || 0;
-      const numDescuento = Number(String(descuento).replace(",", ".")) || 0;
+    const { costoUnitario, iva, iibb, rg5329, costoTotal, discountAmount } =
+      useMemo(() => {
+        const numImporte = Number(String(importe).replace(",", ".")) || 0;
+        const numCantidad = Number(cantidad) || 1;
+        const numImpInternos = Number(String(impuestosInternos).replace(",", ".")) || 0;
 
-      const ivaAmount = numImporte * (ivaRate / 100);
-      const iibbBase = numImporte - numDescuento + numImpInternos;
-      const iibbAmount = isIibbEnabled
-        ? Math.max(0, iibbBase) * (iibbRate / 100)
-        : 0;
-      const ivaDescuentoAmount = numDescuento * (ivaRate / 100);
-
-      const totalPositivo =
-        numImporte + numImpInternos + ivaAmount + iibbAmount;
-      const totalNegativo = numDescuento + ivaDescuentoAmount;
-      const finalCost = totalPositivo - totalNegativo;
-
-      const finalUnitCost =
-        finalCost > 0 && numCantidad > 0 ? finalCost / numCantidad : 0;
-
-      return {
-        costoUnitario: finalUnitCost,
-        subtotalPositivo: {
-          importe: numImporte,
-          internos: numImpInternos,
+        const discountAmt = isCashDiscountEnabled ? numImporte * 0.03 : 0;
+        const neto = numImporte - discountAmt;
+        const taxableBase = neto; // Taxable base is the net amount after discount
+  
+        const ivaAmount = taxableBase * (ivaRate / 100);
+        const iibbAmount = taxableBase * (iibbRate / 100);
+        const rg5329Amount = isRg5329Enabled
+          ? taxableBase * (rg5329Rate / 100)
+          : 0;
+        
+        // Total cost is net amount + all taxes + internal taxes
+        const totalCost =
+          neto + ivaAmount + iibbAmount + rg5329Amount + numImpInternos;
+  
+        const finalUnitCost =
+          totalCost > 0 && numCantidad > 0
+            ? totalCost / numCantidad
+            : 0;
+  
+        return {
+          costoUnitario: finalUnitCost,
           iva: ivaAmount,
           iibb: iibbAmount,
-        },
-        subtotalNegativo: {
-          descuento: numDescuento,
-          ivaDescuento: ivaDescuentoAmount,
-        },
-        costoTotal: finalCost,
-      };
-    }, [
-      importe,
-      cantidad,
-      impuestosInternos,
-      descuento,
-      ivaRate,
-      iibbRate,
-      isIibbEnabled,
-    ]);
-
+          rg5329: rg5329Amount,
+          costoTotal: totalCost,
+          discountAmount: discountAmt,
+        };
+      }, [importe, cantidad, impuestosInternos, ivaRate, iibbRate, rg5329Rate, isRg5329Enabled, isCashDiscountEnabled]);
+  
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement>,
       setter: (value: number | string) => void
     ) => {
       const value = e.target.value;
-      // Allow only numbers and one decimal separator ("." or ",")
       const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
       const parts = sanitizedValue.split(".");
       if (parts.length > 2) {
-        // More than one decimal separator, ignore the last one
         return;
       }
       setter(sanitizedValue);
@@ -108,15 +95,14 @@ export function BebidasCalculator() {
   const handleLimpiar = () => {
     setImporte("");
     setImpuestosInternos("");
-    setDescuento("");
     setCantidad(1);
   };
   
     return (
       <Card bg="dark" text="white">
         <Card.Header className="d-flex justify-content-between align-items-center">
-          <Card.Title as="h5" className="mb-0">Calculadora de Precios - Bebidas</Card.Title>
-          <Button variant="outline-light" size="sm" onClick={handleLimpiar} title="Borrar importe, impuestos, descuento y cantidad">
+          <Card.Title as="h5" className="mb-0">Calculadora de Precios - Golomax</Card.Title>
+          <Button variant="outline-light" size="sm" onClick={handleLimpiar} title="Borrar importe, impuestos internos y cantidad">
             <i className="bi bi-arrow-counterclockwise me-1"></i>
             Limpiar
           </Button>
@@ -125,9 +111,9 @@ export function BebidasCalculator() {
           <Row>
             <Col md={8}>
               <Form>
-                <Row>
+                <Row className="mb-2">
                   <Col>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                       <Form.Label>Importe</Form.Label>
                       <Form.Control
                         type="text"
@@ -141,7 +127,7 @@ export function BebidasCalculator() {
                     </Form.Group>
                   </Col>
                   <Col>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                       <Form.Label>Imp. Internos</Form.Label>
                       <Form.Control
                         type="text"
@@ -155,30 +141,26 @@ export function BebidasCalculator() {
                     </Form.Group>
                   </Col>
                   <Col>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Descuento</Form.Label>
+                    <Form.Group>
+                      <Form.Label>Cantidad</Form.Label>
                       <Form.Control
                         type="text"
-                        name="descuento"
-                        value={descuento}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          handleInputChange(e, setDescuento)
-                        }
+                        value={cantidad}
+                        onChange={(e) => setCantidad(e.target.value)}
                         onFocus={(e) => e.target.select()}
                       />
-                    </Form.Group>                </Col>
-                <Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Cantidad</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={cantidad}
-                      onChange={(e) => setCantidad(e.target.value)}
-                      onFocus={(e) => e.target.select()}
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Form.Group>
+                    <Form.Check
+                        type="switch"
+                        id="cash-discount-switch"
+                        label="Descuento 3% Efectivo"
+                        checked={isCashDiscountEnabled}
+                        onChange={(e) => setIsCashDiscountEnabled(e.target.checked)}
                     />
-                  </Form.Group>
-                </Col>
-              </Row>
+                </Form.Group>
             </Form>
           </Col>
           <Col md={4}>
@@ -218,7 +200,7 @@ export function BebidasCalculator() {
                     <Col xs={5} sm={3}>
                       <InputGroup size="sm">
                         <Form.Control
-                          type="number"
+                          type="text"
                           value={ivaRate}
                           onChange={(e) => setIvaRate(Number(e.target.value))}
                           readOnly={!isEditingRates}
@@ -232,46 +214,74 @@ export function BebidasCalculator() {
                         size="sm"
                         readOnly
                         disabled
-                        value={formatCurrency(subtotalPositivo.iva)}
+                        value={formatCurrency(iva)}
                         className="text-end"
                       />
                     </Col>
                   </Row>
-                  {isIibbEnabled && (
-                                    <Row className="align-items-center g-1">
-                                      <Col xs={12} sm={3} className="text-start text-sm-center">
-                                        <Form.Label className="mb-0 small">IIBB</Form.Label>
-                                      </Col>
-                                      <Col xs={5} sm={3}>
-                                        <InputGroup size="sm">
-                                          <Form.Control
-                                            type="number"
-                                            value={iibbRate}
-                                            onChange={(e) => setIibbRate(Number(e.target.value))}
-                                            readOnly={!isEditingRates}
-                                            className="text-end"
-                                          />
-                                          <InputGroup.Text>%</InputGroup.Text>
-                                        </InputGroup>
-                                      </Col>
-                                      <Col xs={7} sm={6}>
-                                        <Form.Control
-                                          size="sm"
-                                          readOnly
-                                          disabled
-                                          value={formatCurrency(subtotalPositivo.iibb)}
-                                          className="text-end"
-                                        />
-                                      </Col>
-                                    </Row>
+                  <Row className="align-items-center mb-1 g-1">
+                    <Col xs={12} sm={3} className="text-start text-sm-center">
+                      <Form.Label className="mb-0 small">IIBB</Form.Label>
+                    </Col>
+                    <Col xs={5} sm={3}>
+                      <InputGroup size="sm">
+                        <Form.Control
+                          type="text"
+                          value={iibbRate}
+                          onChange={(e) => setIibbRate(Number(e.target.value))}
+                          readOnly={!isEditingRates}
+                          className="text-end"
+                        />
+                        <InputGroup.Text>%</InputGroup.Text>
+                      </InputGroup>
+                    </Col>
+                    <Col xs={7} sm={6}>
+                      <Form.Control
+                        size="sm"
+                        readOnly
+                        disabled
+                        value={formatCurrency(iibb)}
+                        className="text-end"
+                      />
+                    </Col>
+                  </Row>
+                  {isRg5329Enabled && (
+                    <Row className="align-items-center g-1">
+                      <Col xs={12} sm={3} className="text-start text-sm-center">
+                        <Form.Label className="mb-0 small">5329</Form.Label>
+                      </Col>
+                      <Col xs={5} sm={3}>
+                        <InputGroup size="sm">
+                          <Form.Control
+                            type="number"
+                            value={rg5329Rate}
+                            onChange={(e) =>
+                              setRg5329Rate(Number(e.target.value))
+                            }
+                            readOnly={!isEditingRates}
+                            className="text-end"
+                          />
+                          <InputGroup.Text>%</InputGroup.Text>
+                        </InputGroup>
+                      </Col>
+                      <Col xs={7} sm={6}>
+                        <Form.Control
+                          size="sm"
+                          readOnly
+                          disabled
+                          value={formatCurrency(rg5329)}
+                          className="text-end"
+                        />
+                      </Col>
+                    </Row>
                   )}
                   <hr className="border-light my-1" />
                   <Form.Check
                     type="switch"
-                    id="iibb-switch"
-                    label="Calcular IIBB (Coca-Cola)"
-                    checked={isIibbEnabled}
-                    onChange={(e) => setIsIibbEnabled(e.target.checked)}
+                    id="rg5329-switch"
+                    label="Aplicar RG 5329"
+                    checked={isRg5329Enabled}
+                    onChange={(e) => setIsRg5329Enabled(e.target.checked)}
                     className="small"
                   />
                 </div>
@@ -281,57 +291,58 @@ export function BebidasCalculator() {
         </Row>
         <hr className="my-2" />
         <Card bg="secondary" className="p-1 p-sm-2 mb-2">
-          <Row className="text-center mb-1 mb-sm-2 g-1">
-            <Col>
-              <h6 className="small mb-0 mb-sm-1">Subtotal</h6>
-              <span className="small">
-                {formatCurrency(subtotalPositivo.importe)}
+          <Row className="text-center mb-1 mb-sm-2 g-1 flex-nowrap flex-sm-wrap overflow-auto">
+            <Col className="min-width-col">
+              <h6 className="small mb-0 mb-sm-1">Importe</h6>
+              <span>
+                <small>{formatCurrency(Number(importe))}</small>
               </span>
             </Col>
-            <Col>
-              <h6 className="small mb-0 mb-sm-1">+ Int.</h6>
-              <span className="small">
-                {formatCurrency(subtotalPositivo.internos)}
+            {isCashDiscountEnabled && (
+                <Col className="min-width-col">
+                    <h6 className="small mb-0 mb-sm-1">-Desc. 3%</h6>
+                    <span>
+                    <small>{formatCurrency(discountAmount)}</small>
+                    </span>
+                </Col>
+            )}
+            <Col className="min-width-col">
+              <h6 className="small mb-0 mb-sm-1">+Int.</h6>
+              <span>
+                <small>{formatCurrency(Number(impuestosInternos))}</small>
               </span>
             </Col>
-            <Col>
-              <h6 className="small mb-0 mb-sm-1">+ IVA</h6>
-              <span className="small">
-                {formatCurrency(subtotalPositivo.iva)}
+            <Col className="min-width-col">
+              <h6 className="small mb-0 mb-sm-1">+IVA</h6>
+              <span>
+                <small>{formatCurrency(iva)}</small>
               </span>
             </Col>
-            {isIibbEnabled && (
-              <Col>
-                <h6 className="small mb-0 mb-sm-1">+ IIBB</h6>
-                <span className="small">
-                  {formatCurrency(subtotalPositivo.iibb)}
+            <Col className="min-width-col">
+              <h6 className="small mb-0 mb-sm-1">+IIBB</h6>
+              <span>
+                <small>{formatCurrency(iibb)}</small>
+              </span>
+            </Col>
+            {isRg5329Enabled && (
+              <Col className="min-width-col">
+                <h6 className="small mb-0 mb-sm-1">+5329</h6>
+                <span>
+                  <small>{formatCurrency(rg5329)}</small>
                 </span>
               </Col>
             )}
-            {Number(descuento) > 0 && (
-              <Col>
-                <h6 className="small mb-0 mb-sm-1">- Desc.</h6>
-                <span className="small">
-                  {formatCurrency(subtotalNegativo.descuento)}
-                </span>
-              </Col>
-            )}
-            {Number(descuento) > 0 && (
-              <Col>
-                <h6 className="small mb-0 mb-sm-1">- IVA Desc.</h6>
-                <span className="small">
-                  {formatCurrency(subtotalNegativo.ivaDescuento)}
-                </span>
-              </Col>
-            )}
-            <Col>
+            <Col className="min-width-col">
               <h6 className="small mb-0 mb-sm-1">= Costo Total</h6>
-              <strong className="text-light">
-                {formatCurrency(costoTotal)}
-              </strong>
+              <span>
+                <strong className="text-light">
+                  {formatCurrency(costoTotal)}
+                </strong>
+              </span>
             </Col>
           </Row>
         </Card>
+        <hr />
         <div className="d-flex justify-content-end align-items-center mb-3">
           <h5 className="mb-0 me-3">Márgenes de Ganancia</h5>
           <Button
@@ -411,4 +422,4 @@ export function BebidasCalculator() {
       </Card.Body>
     </Card>
   );
-};
+}

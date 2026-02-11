@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Navbar as RBNavbar,
   Container,
@@ -11,6 +12,7 @@ import Swal from "sweetalert2";
 export const Navbar = () => {
   const { user, logout } = useAuthContext();
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -29,10 +31,12 @@ export const Navbar = () => {
     }
   };
 
+  const closeNav = () => setExpanded(false);
+
   return (
-    <RBNavbar bg="dark" variant="dark" expand="lg">
+    <RBNavbar bg="dark" variant="dark" expand="lg" expanded={expanded} onToggle={setExpanded}>
       <Container fluid>
-        <RBNavbar.Brand as={NavLink} to={user ? "/extractions" : "/login"}>
+        <RBNavbar.Brand as={NavLink} to={user ? "/extractions" : "/login"} onClick={closeNav}>
           {user ? `Bienvenid@ ${user.name}` : "Maxikiosco GRG"}
         </RBNavbar.Brand>
         <RBNavbar.Toggle aria-controls="basic-navbar-nav" />
@@ -40,45 +44,45 @@ export const Navbar = () => {
           <Nav className="me-auto">
             {(user?.role === "role_admin" || user?.role === "role_manager") && (
               <>
-                <NavLink className="nav-link" to="/dashboard">
+                <NavLink className="nav-link" to="/dashboard" onClick={closeNav}>
                   Dashboard
                 </NavLink>
-                <NavLink className="nav-link" to="/cierre-kiosco">
+                <NavLink className="nav-link" to="/cierre-kiosco" onClick={closeNav}>
                   Cierre Kiosco
                 </NavLink>
-                <NavLink className="nav-link" to="/cierre-pf">
+                <NavLink className="nav-link" to="/cierre-pf" onClick={closeNav}>
                   Cierre PF
                 </NavLink>
-                <NavLink className="nav-link" to="/providers">
+                <NavLink className="nav-link" to="/providers" onClick={closeNav}>
                   Pedidos
                 </NavLink>
                 <NavDropdown title="Historial" id="basic-nav-dropdown">
-                  <NavDropdown.Item as={NavLink} to="/cierre-kiosco/history">
+                  <NavDropdown.Item as={NavLink} to="/cierre-kiosco/history" onClick={closeNav}>
                     Historial Kiosco
                   </NavDropdown.Item>
-                  <NavDropdown.Item as={NavLink} to="/cierre-pf/history">
+                  <NavDropdown.Item as={NavLink} to="/cierre-pf/history" onClick={closeNav}>
                     Historial PF
                   </NavDropdown.Item>
                 </NavDropdown>
               </>
             )}
             {(user?.role === "role_employee") && (
-              <NavLink className="nav-link" to="/cierre-pf">
+              <NavLink className="nav-link" to="/cierre-pf" onClick={closeNav}>
                 Cierre PF
               </NavLink>
             )}
             {user && (
               <>
-                <NavLink className="nav-link" to="/users">
+                <NavLink className="nav-link" to="/users" onClick={closeNav}>
                   Usuarios
                 </NavLink>
-                <NavLink className="nav-link" to="/calculator">
+                <NavLink className="nav-link" to="/calculator" onClick={closeNav}>
                   Calculadora
                 </NavLink>
-                <NavLink className="nav-link" to="/extractions">
+                <NavLink className="nav-link" to="/extractions" onClick={closeNav}>
                   Retiros
                 </NavLink>
-                <NavLink className="nav-link" to="/notes">
+                <NavLink className="nav-link" to="/notes" onClick={closeNav}>
                   Notas
                 </NavLink>
               </>
@@ -86,11 +90,11 @@ export const Navbar = () => {
           </Nav>
           <Nav>
             {user ? (
-              <button className="btn btn-outline-light" onClick={handleLogout}>
+              <button className="btn btn-outline-light" onClick={() => { closeNav(); handleLogout(); }}>
                 Salir
               </button>
             ) : (
-              <NavLink className="nav-link" to="/login">
+              <NavLink className="nav-link" to="/login" onClick={closeNav}>
                 Ingresar
               </NavLink>
             )}
