@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useDataFetcher } from "../../hooks/useDataFetcher";
 import cierrePfService from "../../services/cierrePfService";
+import { formatDate } from "../../utils/formatters";
 
 interface ICierrePf {
   _id: string;
@@ -28,7 +29,7 @@ const CierrePfHistory = () => {
         <tbody>
           {history.map((cierre) => (
             <tr key={cierre._id}>
-              <td>{new Date(cierre.date).toLocaleDateString()}</td>
+              <td>{formatDate(cierre.date)}</td>
               <td>$ {cierre.totalGanancia}</td>
               <td>
                 <Link

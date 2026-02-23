@@ -9,7 +9,7 @@ export const UserApp = () => {
   return (
     <>
       <Navbar />
-      <div className="container my-4">
+      <div className="container my-1">
         <Outlet />
       </div>
       <SessionWarningModal

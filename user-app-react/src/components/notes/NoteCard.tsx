@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Button, Badge } from "react-bootstrap";
 import { INote } from "../../types";
 import { format } from "date-fns";
+import { useAuth } from "../../hooks/useAuth";
 
 interface NoteCardProps {
   note: INote;
@@ -10,11 +11,21 @@ interface NoteCardProps {
 }
 
 const NoteCard = ({ note, onEdit, onDelete }: NoteCardProps) => {
+  const { user } = useAuth();
+  const isUnread = user && note.readBy && !note.readBy.includes(user._id);
+
   return (
-    <Card className="shadow-sm h-100 d-flex flex-column">
+    <Card className={`shadow-sm h-100 d-flex flex-column ${isUnread ? 'border-primary' : ''}`} style={{ borderWidth: isUnread ? '2px' : '1px' }}>
       <Card.Body className="d-flex flex-column">
         <div className="mb-2">
-          <Card.Title>{note.title}</Card.Title>
+          <div className="d-flex justify-content-between align-items-start">
+            <Card.Title>{note.title}</Card.Title>
+            {isUnread && (
+              <Badge bg="primary" pill>
+                NUEVA
+              </Badge>
+            )}
+          </div>
           <div
             style={{ whiteSpace: "pre-line" }}
             dangerouslySetInnerHTML={{ __html: note.content }}

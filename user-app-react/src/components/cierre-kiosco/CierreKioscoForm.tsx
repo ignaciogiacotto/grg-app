@@ -68,11 +68,28 @@ export const CierreKioscoForm = () => {
     borderColor: isDiscountEnabled ? '#0d6efd' : '#212529',
   };
 
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <div className="container py-1">
-      <h2 className="mb-2">
-        {id ? "✏️ Editar Cierre Kiosco" : "📝 Cierre Kiosco"}
-      </h2>
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h2>
+          {id ? "✏️ Editar Cierre Kiosco" : "📝 Cierre Kiosco"}
+        </h2>
+        <div className="col-md-3">
+          <label htmlFor="date" className="form-label mb-0 me-2">Fecha del cierre:</label>
+          <input
+            id="date"
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            max={today}
+            className="form-control"
+            required
+          />
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="row g-4">
         {/* Columna izquierda */}

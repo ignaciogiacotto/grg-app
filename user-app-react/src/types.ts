@@ -16,6 +16,7 @@ export interface INote {
   creator: IUser;
   tags: ITag[];
   visibleTo: IUser[];
+  readBy: string[];
   createdAt: string;
   updatedAt: string;
 }

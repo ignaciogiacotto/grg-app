@@ -1,5 +1,6 @@
 import { IBoletaFormItem } from "../../hooks/useCierrePfForm";
 import React from "react";
+import { formatCurrency } from "../../utils/formatters";
 
 interface BoletaEspecialRowProps {
   item: IBoletaFormItem;
@@ -84,10 +85,10 @@ export const BoletaEspecialRow = ({
       </td>
       <td>
         <input
-          type="number"
+          type="text"
           className="form-control form-control-sm text-end"
           readOnly
-          value={item.subtotal}
+          value={formatCurrency(Number(item.subtotal) || 0)}
           style={{ maxWidth: "120px" }}
         />
       </td>

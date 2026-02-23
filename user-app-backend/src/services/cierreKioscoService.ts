@@ -1,11 +1,17 @@
 import { CierreKiosco, ICierreKiosco } from "../models/cierreKioscoModel";
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, isFuture } from 'date-fns';
 
 export const createCierreKiosco = async (data: ICierreKiosco) => {
-  const newCierreKiosco = new CierreKiosco(data);
+  const dateToUse = data.date ? new Date(data.date) : new Date();
 
-  const start = startOfDay(newCierreKiosco.date);
-  const end = endOfDay(newCierreKiosco.date);
+  if (isFuture(dateToUse)) {
+    const error = new Error("No se pueden realizar cierres para fechas futuras.");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  const start = startOfDay(dateToUse);
+  const end = endOfDay(dateToUse);
 
   const existingCierre = await CierreKiosco.findOne({
     date: {
@@ -20,6 +26,7 @@ export const createCierreKiosco = async (data: ICierreKiosco) => {
     throw error;
   }
 
+  const newCierreKiosco = new CierreKiosco({ ...data, date: dateToUse });
   return await newCierreKiosco.save();
 };
 

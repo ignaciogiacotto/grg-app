@@ -6,6 +6,7 @@ export interface INote extends Document {
   creator: Types.ObjectId;
   tags: Types.ObjectId[];
   visibleTo: Types.ObjectId[];
+  readBy: Types.ObjectId[];
 }
 
 const noteSchema = new Schema(
@@ -30,6 +31,12 @@ const noteSchema = new Schema(
       },
     ],
     visibleTo: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    readBy: [
       {
         type: Schema.Types.ObjectId,
         ref: 'User',

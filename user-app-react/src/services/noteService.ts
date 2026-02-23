@@ -37,11 +37,29 @@ export const deleteNote = async (id: string) => {
   });
 };
 
+export const markAsRead = async (id: string) => {
+  const token = getAuthToken();
+  const response = await axios.put(`${API_URL}/${id}/read`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+export const getUnreadCount = async () => {
+  const token = getAuthToken();
+  const response = await axios.get(`${API_URL}/unread-count`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data.count;
+};
+
 const noteService = {
     getNotes,
     createNote,
     updateNote,
     deleteNote,
+    markAsRead,
+    getUnreadCount,
 };
 
 export default noteService;

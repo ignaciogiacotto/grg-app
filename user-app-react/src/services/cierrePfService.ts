@@ -24,6 +24,7 @@ export interface IBoletaEspecialDB {
   _id: string;
   name: string;
   value: number;
+  order?: number;
 }
 
 const getAuthToken = () => {
@@ -95,6 +96,7 @@ const getBoletasEspeciales = async (): Promise<IBoletaEspecialDB[]> => {
 const createBoletaEspecial = async (boleta: {
   name: string;
   value: number;
+  order?: number;
 }): Promise<IBoletaEspecialDB> => {
   const token = getAuthToken();
   const response = await axios.post(BOLETAS_API_URL, boleta, {
@@ -105,7 +107,7 @@ const createBoletaEspecial = async (boleta: {
 
 const updateBoletaEspecial = async (
   id: string,
-  boleta: { name: string; value: number }
+  boleta: { name: string; value: number; order?: number }
 ): Promise<IBoletaEspecialDB> => {
   const token = getAuthToken();
   const response = await axios.put(`${BOLETAS_API_URL}/${id}`, boleta, {

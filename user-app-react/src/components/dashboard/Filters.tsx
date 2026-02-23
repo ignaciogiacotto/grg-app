@@ -108,9 +108,9 @@ const Filters: React.FC<FiltersProps> = ({
                 className="form-select"
                 value={month}
                 onChange={(e) => setMonth(Number(e.target.value))}>
-                {Array.from(Array(12).keys()).map((m) => (
-                  <option key={m + 1} value={m + 1}>
-                    {m + 1}
+                {["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"].map((name, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {name}
                   </option>
                 ))}
               </select>
@@ -130,21 +130,51 @@ const Filters: React.FC<FiltersProps> = ({
           </>
         );
       case "week":
+        // Calcular qué semanas del año caen en el mes/año seleccionado
+        const getWeeksInMonth = (y: number, m: number) => {
+          const weeks: number[] = [];
+          const firstDay = new Date(y, m - 1, 1);
+          const lastDay = new Date(y, m, 0);
+          
+          const getWeekNumber = (d: Date) => {
+            const date = new Date(d.getTime());
+            date.setHours(0, 0, 0, 0);
+            date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+            const week1 = new Date(date.getFullYear(), 0, 4);
+            return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+          };
+
+          let current = new Date(firstDay);
+          while (current <= lastDay) {
+            const w = getWeekNumber(current);
+            if (!weeks.includes(w)) weeks.push(w);
+            current.setDate(current.getDate() + 7);
+          }
+          const lastWeek = getWeekNumber(lastDay);
+          if (!weeks.includes(lastWeek)) weeks.push(lastWeek);
+          
+          return weeks.sort((a, b) => a - b);
+        };
+
+        const weeksInMonthList = getWeeksInMonth(year, month);
+
         return (
           <>
             <div className="col-md-3">
-              <label htmlFor="week-select" className="form-label">
-                Semana
+              <label htmlFor="month-select-week" className="form-label">
+                Mes
               </label>
-              <input
-                id="week-select"
-                type="number"
-                className="form-control"
-                value={week}
-                onChange={(e) => setWeek(Number(e.target.value))}
-                min={1}
-                max={53}
-              />
+              <select
+                id="month-select-week"
+                className="form-select"
+                value={month}
+                onChange={(e) => setMonth(Number(e.target.value))}>
+                {["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"].map((name, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="col-md-3">
               <label htmlFor="year-select-week" className="form-label">
@@ -157,6 +187,22 @@ const Filters: React.FC<FiltersProps> = ({
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
               />
+            </div>
+            <div className="col-md-3">
+              <label htmlFor="week-select" className="form-label">
+                Semana
+              </label>
+              <select
+                id="week-select"
+                className="form-select"
+                value={week}
+                onChange={(e) => setWeek(Number(e.target.value))}>
+                {weeksInMonthList.map((w, index) => (
+                  <option key={w} value={w}>
+                    Semana {index + 1} (Sem. {w})
+                  </option>
+                ))}
+              </select>
             </div>
           </>
         );

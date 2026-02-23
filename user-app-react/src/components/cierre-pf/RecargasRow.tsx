@@ -1,5 +1,6 @@
 import { IBoletaFormItem } from "../../hooks/useCierrePfForm";
 import React from "react";
+import { formatCurrency } from "../../utils/formatters";
 
 interface RecargasRowProps {
   item: IBoletaFormItem;
@@ -15,10 +16,12 @@ export const RecargasRow = ({ item, state, dispatch }: RecargasRowProps) => {
       e.preventDefault();
 
       const inputs = Array.from(
-        document.querySelectorAll(".cantidad-input")
+        document.querySelectorAll(".cantidad-input"),
       ) as HTMLInputElement[];
 
-      const currentIndex = inputs.findIndex((input) => input === e.currentTarget);
+      const currentIndex = inputs.findIndex(
+        (input) => input === e.currentTarget,
+      );
 
       if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
         inputs[currentIndex + 1].focus();
@@ -38,7 +41,10 @@ export const RecargasRow = ({ item, state, dispatch }: RecargasRowProps) => {
           onChange={(e) =>
             dispatch({
               type: "SET_FIELD",
-              payload: { field: "recargas", value: parseInt(e.target.value) || 0 },
+              payload: {
+                field: "recargas",
+                value: parseInt(e.target.value) || 0,
+              },
             })
           }
           onFocus={(e) => e.target.select()}
@@ -87,10 +93,10 @@ export const RecargasRow = ({ item, state, dispatch }: RecargasRowProps) => {
       </td>
       <td>
         <input
-          type="number"
+          type="text"
           className="form-control form-control-sm text-end"
           readOnly
-          value={item.subtotal}
+          value={formatCurrency(Number(item.subtotal) || 0)}
           style={{ maxWidth: "120px" }}
         />
       </td>

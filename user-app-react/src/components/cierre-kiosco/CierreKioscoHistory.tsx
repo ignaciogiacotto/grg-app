@@ -4,6 +4,7 @@ import {
   getCierresKiosco,
   deleteCierreKiosco,
 } from "../../services/cierreKioscoService";
+import { formatDate } from "../../utils/formatters";
 
 interface ICierreKiosco {
   _id: string;
@@ -35,7 +36,7 @@ export const CierreKioscoHistory = () => {
         <tbody>
           {history.map((cierre) => (
             <tr key={cierre._id}>
-              <td>{new Date(cierre.date).toLocaleDateString()}</td>
+              <td>{formatDate(cierre.date)}</td>
               <td>$ {cierre.totalCaja}</td>
               <td>$ {cierre.totalCigarros}</td>
               <td>{cierre.createdBy?.name}</td>

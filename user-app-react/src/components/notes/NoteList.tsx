@@ -3,6 +3,7 @@ import { Row, Col, Card, Placeholder } from "react-bootstrap";
 import noteService from "../../services/noteService";
 import NoteCard from "./NoteCard";
 import { INote } from "../../types";
+import { useAuth } from "../../hooks/useAuth";
 
 interface NoteListProps {
   onEdit: (note: INote) => void;
@@ -14,12 +15,26 @@ const NoteList = ({ onEdit, onDelete, selectedTag }: NoteListProps) => {
   const [notes, setNotes] = useState<INote[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<INote[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchNotes = async () => {
       try {
         const fetchedNotes = await noteService.getNotes();
         setNotes(fetchedNotes);
+        
+        // Mark unread notes as read
+        if (user) {
+          const unreadNotes = fetchedNotes.filter(
+            (note: INote) => note.readBy && !note.readBy.includes(user._id)
+          );
+          
+          if (unreadNotes.length > 0) {
+            await Promise.all(
+              unreadNotes.map((note: INote) => noteService.markAsRead(note._id))
+            );
+          }
+        }
       } catch (error) {
         console.error("Error fetching notes:", error);
       } finally {
@@ -27,7 +42,7 @@ const NoteList = ({ onEdit, onDelete, selectedTag }: NoteListProps) => {
       }
     };
     fetchNotes();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (selectedTag) {

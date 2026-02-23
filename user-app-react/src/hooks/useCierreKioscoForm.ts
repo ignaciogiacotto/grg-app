@@ -22,7 +22,8 @@ interface ICierreKiosco {
 export const useCierreKioscoForm = (id?: string) => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<ICierreKiosco>({
+  const [formData, setFormData] = useState<ICierreKiosco & { date: string }>({
+    date: new Date().toISOString().split("T")[0],
     fac1: 0,
     fac2: 0,
     cyber: 0,
@@ -44,7 +45,8 @@ export const useCierreKioscoForm = (id?: string) => {
       const fetchCierre = async () => {
         try {
           const data = await getCierreKioscoById(id);
-          setFormData(data);
+          const formattedDate = new Date(data.date).toISOString().split("T")[0];
+          setFormData({ ...data, date: formattedDate });
         } catch (error) {
           console.error("Error fetching cierre de kiosco:", error);
           Swal.fire(
@@ -83,7 +85,7 @@ export const useCierreKioscoForm = (id?: string) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: Number(value) });
+    setFormData({ ...formData, [name]: name === "date" ? value : Number(value) });
   };
 
   const handleCigarrosChange = (
@@ -157,11 +159,12 @@ export const useCierreKioscoForm = (id?: string) => {
           "success"
         );
         navigate("/dashboard");
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error saving cierre:", error);
+        const errorMessage = error.response?.data?.message || "Ocurrió un error al guardar el cierre.";
         Swal.fire(
           "Error",
-          "Ocurrió un error al guardar el cierre.",
+          errorMessage,
           "error"
         );
       }

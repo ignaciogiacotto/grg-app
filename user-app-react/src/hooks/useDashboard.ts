@@ -17,7 +17,7 @@ export const useDashboard = (
   week: number,
   selectedDate: string,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) => {
   // --- STATE MANAGEMENT ---
   const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
@@ -25,9 +25,11 @@ export const useDashboard = (
   const [error, setError] = useState<string | null>(null);
   const [todayProfit, setTodayProfit] = useState<number>(0);
   const [currentMonthProfit, setCurrentMonthProfit] = useState<number>(0);
-  const [rangeProfit, setRangeProfit] = useState<number>(0);
-  const [rangeProfitKiosco, setRangeProfitKiosco] = useState<number>(0);
-  const [rangeProfitPf, setRangeProfitPf] = useState<number>(0);
+  const [monthlyProjection, setMonthlyProjection] = useState<number>(0);
+  const [unreadNotesCount, setUnreadNotesCount] = useState<number>(0);
+  const [totalProfit, setTotalProfit] = useState<number>(0);
+  const [totalKioscoProfit, setTotalKioscoProfit] = useState<number>(0);
+  const [totalPfProfit, setTotalPfProfit] = useState<number>(0);
   const [envelopes, setEnvelopes] = useState<EnvelopeSummary | null>(null);
   const [kioscoProfitByCategory, setKioscoProfitByCategory] =
     useState<KioscoProfitByCategory | null>(null);
@@ -41,7 +43,7 @@ export const useDashboard = (
     }
   }, [startDate, endDate]);
 
-  // --- LOGIC FOR SUMMARY CARDS (Today & Current Month) ---
+  // --- LOGIC FOR SUMMARY CARDS (Today, Current Month & Projection) ---
   useEffect(() => {
     const fetchSummaryData = async () => {
       const now = new Date();
@@ -53,9 +55,15 @@ export const useDashboard = (
 
       const monthTotal = monthData.reduce(
         (acc, curr) => acc + curr.kioscoProfit + curr.pfProfit,
-        0
+        0,
       );
       setCurrentMonthProfit(monthTotal);
+
+      // Calculation for Monthly Projection
+      const currentDay = now.getDate();
+      const totalDaysInMonth = new Date(year, month, 0).getDate();
+      const projection = (monthTotal / currentDay) * totalDaysInMonth;
+      setMonthlyProjection(projection);
 
       const todayData = monthData.find((d) => d.date.startsWith(todayStr));
       const todayTotal = todayData
@@ -65,6 +73,20 @@ export const useDashboard = (
     };
 
     fetchSummaryData().catch(console.error);
+  }, []);
+
+  // --- LOGIC FOR UNREAD NOTES ---
+  useEffect(() => {
+    const { getUnreadCount } = require("../services/noteService").default;
+    const fetchNotesCount = async () => {
+      try {
+        const count = await getUnreadCount();
+        setUnreadNotesCount(count);
+      } catch (e) {
+        console.error("Error fetching unread notes in dashboard", e);
+      }
+    };
+    fetchNotesCount();
   }, []);
 
   // --- LOGIC FOR ENVELOPE SUMMARY ---
@@ -85,27 +107,28 @@ export const useDashboard = (
           week,
           selectedDate,
           startDate,
-          endDate
+          endDate,
         );
         if (data) {
+          const kTotal = data.reduce(
+            (acc, curr) => acc + curr.kioscoProfit,
+            0,
+          );
+          const pfTotal = data.reduce(
+            (acc, curr) => acc + curr.pfProfit,
+            0,
+          );
+          setTotalKioscoProfit(kTotal);
+          setTotalPfProfit(pfTotal);
+          setTotalProfit(kTotal + pfTotal);
+
           if (period === "range") {
-            const rangeKioscoTotal = data.reduce(
-              (acc, curr) => acc + curr.kioscoProfit,
-              0
-            );
-            const rangePfTotal = data.reduce(
-              (acc, curr) => acc + curr.pfProfit,
-              0
-            );
-            setRangeProfitKiosco(rangeKioscoTotal);
-            setRangeProfitPf(rangePfTotal);
-            setRangeProfit(rangeKioscoTotal + rangePfTotal);
             fetchKioscoProfitByCategory();
           } else {
             setKioscoProfitByCategory(null);
           }
           const labels = data.map((d: DailyProfit) =>
-            new Date(d.date).toLocaleDateString("es-AR", { timeZone: "UTC" })
+            new Date(d.date).toLocaleDateString("es-AR", { timeZone: "UTC" }),
           );
           const kioscoProfits = data.map((d: DailyProfit) => d.kioscoProfit);
           const pfProfits = data.map((d: DailyProfit) => d.pfProfit);
@@ -152,10 +175,12 @@ export const useDashboard = (
     error,
     todayProfit,
     currentMonthProfit,
+    monthlyProjection,
+    unreadNotesCount,
     envelopes,
-    rangeProfit,
-    rangeProfitKiosco,
-    rangeProfitPf,
+    totalProfit,
+    totalKioscoProfit,
+    totalPfProfit,
     kioscoProfitByCategory,
     fetchKioscoProfitByCategory,
   };

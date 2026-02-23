@@ -21,28 +21,38 @@ interface DailyProfit {
 }
 
 const getYearDateRange = (year: number) => {
-  const date = setYear(new Date(), year);
-  return { start: startOfYear(date), end: endOfYear(date) };
+  const start = new Date(`${year}-01-01T00:00:00.000Z`);
+  const end = new Date(`${year}-12-31T23:59:59.999Z`);
+  return { start, end };
 };
 
 const getMonthDateRange = (year: number, month: number) => {
-  let date = new Date();
-  date = setYear(date, year);
-  date = setMonth(date, month - 1); // month is 0-indexed in date-fns
-  return { start: startOfMonth(date), end: endOfMonth(date) };
+  const start = new Date(`${year}-${String(month).padStart(2, "0")}-01T00:00:00.000Z`);
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const end = new Date(`${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}T23:59:59.999Z`);
+  return { start, end };
 };
 
 const getWeekDateRange = (year: number, week: number) => {
-  let date = setYear(new Date(), year);
-  const firstDayOfYear = startOfYear(date);
-  const firstWeek = getWeek(firstDayOfYear);
-  const day = firstDayOfYear.getDay();
-  const diff = (week - firstWeek) * 7 - day + 1;
-  date.setDate(firstDayOfYear.getDate() + diff);
-  return {
-    start: startOfWeek(date, { weekStartsOn: 1 }),
-    end: endOfWeek(date, { weekStartsOn: 1 }),
-  };
+  // En el estándar ISO, la semana 1 es la que tiene el primer jueves del año.
+  // Un truco fiable es empezar en el 4 de enero (que siempre es semana 1).
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const dayOfWeek = jan4.getUTCDay() || 7; // 1 (Lun) a 7 (Dom)
+  
+  // Retrocedemos al lunes de esa semana 1
+  const mondayWeek1 = new Date(jan4);
+  mondayWeek1.setUTCDate(jan4.getUTCDate() - (dayOfWeek - 1));
+  
+  // Sumamos las semanas necesarias
+  const start = new Date(mondayWeek1);
+  start.setUTCDate(mondayWeek1.getUTCDate() + (week - 1) * 7);
+  start.setUTCHours(0, 0, 0, 0);
+  
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + 6);
+  end.setUTCHours(23, 59, 59, 999);
+  
+  return { start, end };
 };
 
 export const getDailyProfit = async (
@@ -55,51 +65,29 @@ export const getDailyProfit = async (
   endDate?: string
 ): Promise<DailyProfit[]> => {
   let start, end;
-
   const currentYear = new Date().getFullYear();
 
   switch (period) {
     case "day":
-      const day = date ? new Date(date) : new Date();
-      start = startOfDay(day);
-      end = endOfDay(day);
+      const dayStr = date || new Date().toISOString().split("T")[0];
+      start = new Date(`${dayStr}T00:00:00.000Z`);
+      end = new Date(`${dayStr}T23:59:59.999Z`);
       break;
     case "range":
-      if (startDate) {
-        const [year, month, day] = startDate.split('-').map(Number);
-        start = startOfDay(new Date(year, month - 1, day));
-      } else {
-        start = new Date();
-      }
-      if (endDate) {
-        const [year, month, day] = endDate.split('-').map(Number);
-        end = endOfDay(new Date(year, month - 1, day));
-      } else {
-        end = new Date();
-      }
+      start = startDate ? new Date(`${startDate}T00:00:00.000Z`) : startOfDay(new Date());
+      end = endDate ? new Date(`${endDate}T23:59:59.999Z`) : endOfDay(new Date());
       break;
     case "year":
       ({ start, end } = getYearDateRange(year || currentYear));
       break;
     case "month":
-      const currentMonth = new Date().getMonth() + 1;
-      ({ start, end } = getMonthDateRange(
-        year || currentYear,
-        month || currentMonth
-      ));
+      ({ start, end } = getMonthDateRange(year || currentYear, month || (new Date().getMonth() + 1)));
       break;
     case "week":
-      const currentWeek = getWeek(new Date());
-      ({ start, end } = getWeekDateRange(
-        year || currentYear,
-        week || currentWeek
-      ));
+      ({ start, end } = getWeekDateRange(year || currentYear, week || 1));
       break;
     default:
-      ({ start, end } = getMonthDateRange(
-        currentYear,
-        new Date().getMonth() + 1
-      ));
+      ({ start, end } = getMonthDateRange(currentYear, new Date().getMonth() + 1));
   }
 
   const kioscoData = await CierreKiosco.find({
@@ -149,8 +137,8 @@ export const getKioscoProfitByCategory = async (
   startDate: string,
   endDate: string
 ) => {
-  const start = startOfDay(new Date(startDate));
-  const end = endOfDay(new Date(endDate));
+  const start = new Date(`${startDate}T00:00:00.000Z`);
+  const end = new Date(`${endDate}T23:59:59.999Z`);
 
   const kioscoData = await CierreKiosco.find({
     date: {
@@ -178,17 +166,25 @@ export const getKioscoProfitByCategory = async (
 };
 
 export const getEnvelopeSummary = async () => {
-  const todayStart = startOfDay(new Date());
-  const todayEnd = endOfDay(new Date());
+  // Obtenemos la fecha actual en formato YYYY-MM-DD (hora local)
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
 
-  const todayKioscoClosing = await CierreKiosco.findOne({
+  // Creamos el rango UTC que corresponde a ese día
+  const start = new Date(`${dateStr}T00:00:00.000Z`);
+  const end = new Date(`${dateStr}T23:59:59.999Z`);
+
+  const kioscoClosing = await CierreKiosco.findOne({
     date: {
-      $gte: todayStart,
-      $lte: todayEnd,
+      $gte: start,
+      $lte: end,
     },
   }).sort({ date: -1 });
 
-  if (!todayKioscoClosing) {
+  if (!kioscoClosing) {
     return {
       cigarettes: 0,
       recharges: 0,
@@ -197,8 +193,8 @@ export const getEnvelopeSummary = async () => {
   }
 
   return {
-    cigarettes: todayKioscoClosing.totalCigarros,
-    recharges: todayKioscoClosing.cargVirt * 10,
-    grg: todayKioscoClosing.totalCaja,
+    cigarettes: kioscoClosing.totalCigarros,
+    recharges: kioscoClosing.cargVirt * 10, // Mantengo la lógica existente, aunque puede requerir ajuste
+    grg: kioscoClosing.totalCaja,
   };
 };

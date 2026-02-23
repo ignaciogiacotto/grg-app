@@ -17,6 +17,7 @@ export interface IBoletaFormItem {
 }
 
 interface IState {
+  date: string;
   boletas: Omit<IBoletaFormItem, "subtotal" | "type">[];
   boletasVersion: number;
   cantidadTotalBoletas: number;
@@ -47,6 +48,7 @@ type Action =
   | { type: "REFETCH_BOLETAS" };
 
 const initialState: IState = {
+  date: new Date().toISOString().split("T")[0],
   boletas: [],
   boletasVersion: 0,
   cantidadTotalBoletas: 0,
@@ -145,6 +147,10 @@ export const useCierrePfForm = (id?: string) => {
               b.name !== "Western Union Value" &&
               b.name !== "Valor Factura Normal"
           )
+          .sort(
+            (a: any, b: any) =>
+              (a.order ?? 0) - (b.order ?? 0) || a.name.localeCompare(b.name)
+          )
           .map((b) => ({
             id: b._id,
             label: b.name,
@@ -172,6 +178,7 @@ export const useCierrePfForm = (id?: string) => {
           });
 
           initialStateUpdate.boletas = otherBoletas;
+          initialStateUpdate.date = new Date(cierreData.date).toISOString().split("T")[0];
           initialStateUpdate.cantidadTotalBoletas =
             cierreData.cantidadTotalBoletas || 0;
           initialStateUpdate.recargas = Number(cierreData.recargas) || 0;
@@ -250,6 +257,7 @@ export const useCierrePfForm = (id?: string) => {
 
     if (result.isConfirmed) {
       const cierreData = {
+        date: state.date,
         boletasEspeciales: boletas.map((b) => ({
           name: b.label,
           quantity: b.quantity,
@@ -274,9 +282,10 @@ export const useCierrePfForm = (id?: string) => {
           "success"
         );
         navigate("/dashboard");
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error guardando el cierre:", error);
-        Swal.fire("Error", "No se pudo guardar el cierre.", "error");
+        const errorMessage = error.response?.data?.message || "No se pudo guardar el cierre.";
+        Swal.fire("Error", errorMessage, "error");
       }
     }
   };
