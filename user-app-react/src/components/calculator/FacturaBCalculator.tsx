@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, Card, Row, Col, InputGroup, Button } from "react-bootstrap";
 
-
 export function FacturaBCalculator() {
   const [importe, setImporte] = useState<number | string>("");
   const [cantidad, setCantidad] = useState<number | string>(1);
@@ -12,83 +11,86 @@ export function FacturaBCalculator() {
   const [markup100, setMarkup100] = useState(100);
   const [isEditingMarkups, setIsEditingMarkups] = useState(false);
 
-    const costo = useMemo(() => {
-      const numImporte = Number(String(importe).replace(",", ".")) || 0;
-      const numCantidad = Number(cantidad);
-      if (numCantidad === 0 || isNaN(numImporte) || isNaN(numCantidad)) return 0;
-      return numImporte / numCantidad;
-    }, [importe, cantidad]);
-  
-    const handleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement>,
-      setter: (value: number | string) => void
-    ) => {
-      const value = e.target.value;
-      // Allow only numbers and one decimal separator ("." or ",")
-      const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
-      const parts = sanitizedValue.split(".");
-      if (parts.length > 2) {
-        // More than one decimal separator, ignore the last one
-        return;
-      }
-      setter(sanitizedValue);
-    };
-  
-    const venta50 = useMemo(
-      () => costo * (1 + markup50 / 100),
-      [costo, markup50]
-    );
-    const venta70 = useMemo(
-      () => costo * (1 + markup70 / 100),
-      [costo, markup70]
-    );
-    const venta100 = useMemo(
-      () => costo * (1 + markup100 / 100),
-      [costo, markup100]
-    );
-  
-    const formatCurrency = (value: number) => {
-      return new Intl.NumberFormat("es-AR", {
-        style: "currency",
-        currency: "ARS",
-      }).format(value);
-    };
+  const costo = useMemo(() => {
+    const numImporte = Number(String(importe).replace(",", ".")) || 0;
+    const numCantidad = Number(cantidad);
+    if (numCantidad === 0 || isNaN(numImporte) || isNaN(numCantidad)) return 0;
+    return numImporte / numCantidad;
+  }, [importe, cantidad]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (value: number | string) => void,
+  ) => {
+    const value = e.target.value;
+    // Allow only numbers and one decimal separator ("." or ",")
+    const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
+    const parts = sanitizedValue.split(".");
+    if (parts.length > 2) {
+      // More than one decimal separator, ignore the last one
+      return;
+    }
+    setter(sanitizedValue);
+  };
+
+  const venta50 = useMemo(
+    () => costo * (1 + markup50 / 100),
+    [costo, markup50],
+  );
+  const venta70 = useMemo(
+    () => costo * (1 + markup70 / 100),
+    [costo, markup70],
+  );
+  const venta100 = useMemo(
+    () => costo * (1 + markup100 / 100),
+    [costo, markup100],
+  );
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+    }).format(value);
+  };
 
   const handleLimpiar = () => {
     setImporte("");
     setCantidad(1);
   };
-  
-    return (
-      <Card bg="dark" text="white">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <Card.Title as="h5" className="mb-0">Calculadora de Precios - Factura B</Card.Title>
-          <Button variant="outline-light" size="sm" onClick={handleLimpiar} title="Borrar importe y cantidad">
-            <i className="bi bi-arrow-counterclockwise me-1"></i>
-            Limpiar
-          </Button>
-        </Card.Header>
-        <Card.Body>
-          <Card.Text>
-            Ingresa el importe total y la cantidad de unidades de la factura para
-            calcular el costo unitario y los precios de venta sugeridos.
-          </Card.Text>
-          <Form>
-            <Row className="mb-4">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Importe Total de Factura</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="importe"
-                    placeholder="15000"
-                    value={importe}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleInputChange(e, setImporte)
-                    }
-                    onFocus={(e) => e.target.select()}
-                  />
-                </Form.Group>            </Col>
+
+  return (
+    <Card bg="dark" text="white">
+      <Card.Header className="d-flex justify-content-between align-items-center">
+        <Card.Title as="h5" className="mb-0">
+          Calculadora de Precios - Factura B
+        </Card.Title>
+        <Button
+          variant="outline-light"
+          size="sm"
+          onClick={handleLimpiar}
+          title="Borrar importe y cantidad">
+          <i className="bi bi-arrow-counterclockwise me-1"></i>
+          Limpiar
+        </Button>
+      </Card.Header>
+      <Card.Body>
+        <Form>
+          <Row className="mb-4">
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Importe Total de Factura</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="importe"
+                  placeholder="15000"
+                  value={importe}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleInputChange(e, setImporte)
+                  }
+                  onFocus={(e) => e.target.select()}
+                />
+              </Form.Group>{" "}
+            </Col>
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Cantidad de Unidades</Form.Label>
@@ -98,7 +100,8 @@ export function FacturaBCalculator() {
                   value={cantidad}
                   onChange={(e) => setCantidad(e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  />              </Form.Group>
+                />{" "}
+              </Form.Group>
             </Col>
           </Row>
         </Form>

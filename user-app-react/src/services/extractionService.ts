@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `${process.env.REACT_APP_API_URL}/api/extractions`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/extractions`;
 
 export type ExtractionStatus = "Pendiente" | "Disponible" | "Avisado" | "Completado";
 

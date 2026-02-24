@@ -7,6 +7,7 @@ import {
   getKioscoProfitByCategoryReport,
   KioscoProfitByCategory,
 } from "../services/reportService";
+import { getUnreadCount } from "../services/noteService";
 
 type Period = "day" | "week" | "month" | "year" | "range";
 
@@ -77,7 +78,6 @@ export const useDashboard = (
 
   // --- LOGIC FOR UNREAD NOTES ---
   useEffect(() => {
-    const { getUnreadCount } = require("../services/noteService").default;
     const fetchNotesCount = async () => {
       try {
         const count = await getUnreadCount();
@@ -127,9 +127,16 @@ export const useDashboard = (
           } else {
             setKioscoProfitByCategory(null);
           }
-          const labels = data.map((d: DailyProfit) =>
-            new Date(d.date).toLocaleDateString("es-AR", { timeZone: "UTC" }),
-          );
+          const labels = data.map((d: DailyProfit) => {
+            const date = new Date(d.date);
+            if (period === "month") {
+              return date.getUTCDate().toString();
+            }
+            if (period === "week") {
+              return date.toLocaleDateString("es-AR", { weekday: "short", day: "numeric", timeZone: "UTC" });
+            }
+            return date.toLocaleDateString("es-AR", { timeZone: "UTC" });
+          });
           const kioscoProfits = data.map((d: DailyProfit) => d.kioscoProfit);
           const pfProfits = data.map((d: DailyProfit) => d.pfProfit);
           setChartData({

@@ -17,6 +17,8 @@ interface ProfitDashboardProps {
   fetchKioscoProfitByCategory: () => void;
   setShowKioscoProfitByCategory: (show: boolean) => void;
   period: string;
+  showBreakdown: boolean;
+  setShowBreakdown: (show: boolean) => void;
 }
 
 const ProfitDashboard: React.FC<ProfitDashboardProps> = ({
@@ -28,81 +30,102 @@ const ProfitDashboard: React.FC<ProfitDashboardProps> = ({
   fetchKioscoProfitByCategory,
   setShowKioscoProfitByCategory,
   period,
+  showBreakdown,
+  setShowBreakdown,
 }) => {
-  if (!showKioscoProfitByCategory && totalProfit === 0) return null;
+  if (totalProfit === 0 && !showKioscoProfitByCategory) return null;
 
   return (
     <div className="mt-4">
-      <div className="mb-4">
-        <h5 className="text-muted mb-3">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="text-muted mb-0">
           {period === "range" ? "Desglose del Rango Seleccionado" : "Desglose del Período"}
         </h5>
-        <div className="row g-3">
-          <div className="col-md-4">
-            <div
-              className="card border-info shadow-sm h-100"
-              onClick={() => {
-                if (period === "range") {
-                  fetchKioscoProfitByCategory();
-                  setShowKioscoProfitByCategory(!showKioscoProfitByCategory);
-                }
-              }}
-              style={{ cursor: period === "range" ? "pointer" : "default" }}>
-              <div className="card-body py-3">
-                <h6 className="card-subtitle mb-1 text-info">Kiosco</h6>
-                <h4 className="mb-0">
-                  ${totalKioscoProfit.toLocaleString("es-AR")}
-                </h4>
-                {period === "range" && <small className="text-muted">Click para ver categorías</small>}
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="card border-danger shadow-sm h-100">
-              <div className="card-body py-3">
-                <h6 className="card-subtitle mb-1 text-danger">Pago Fácil</h6>
-                <h4 className="mb-0">
-                  ${totalPfProfit.toLocaleString("es-AR")}
-                </h4>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="card border-warning shadow-sm h-100">
-              <div className="card-body py-3">
-                <h6 className="card-subtitle mb-1 text-warning">Total</h6>
-                <h4 className="mb-0">
-                  ${totalProfit.toLocaleString("es-AR")}
-                </h4>
-              </div>
-            </div>
-          </div>
-        </div>
+        <button
+          className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+          onClick={() => setShowBreakdown(!showBreakdown)}
+        >
+          {showBreakdown ? (
+            <>
+              <EyeOff size={16} /> Ocultar
+            </>
+          ) : (
+            <>
+              <Eye size={16} /> Mostrar
+            </>
+          )}
+        </button>
       </div>
 
-      {showKioscoProfitByCategory && kioscoProfitByCategory && (
-        <div className="animate__animated animate__fadeIn">
-          <h5 className="text-muted mb-3">Ganancias Kiosco por Categoría</h5>
-          <div className="row g-2">
-            {[
-              { label: "Factura B", val: kioscoProfitByCategory.facturaB },
-              { label: "Remitos", val: kioscoProfitByCategory.remitos },
-              { label: "Cyber", val: kioscoProfitByCategory.cyber },
-              { label: "Cargas Virtuales", val: kioscoProfitByCategory.cargasVirtuales },
-            ].map((cat, i) => (
-              <div key={i} className="col-md-3">
-                <div className="card bg-light border-0 shadow-sm">
-                  <div className="card-body py-2 px-3">
-                    <h6 className="small mb-1 text-secondary">{cat.label}</h6>
-                    <h5 className="mb-0">${cat.val.toLocaleString("es-AR")}</h5>
-                  </div>
+      {showBreakdown && (
+        <>
+          <div className="row g-3 mb-4">
+            <div className="col-md-4">
+              <div
+                className="card border-info shadow-sm h-100"
+                onClick={() => {
+                  if (period === "range") {
+                    fetchKioscoProfitByCategory();
+                    setShowKioscoProfitByCategory(!showKioscoProfitByCategory);
+                  }
+                }}
+                style={{ cursor: period === "range" ? "pointer" : "default" }}>
+                <div className="card-body py-3">
+                  <h6 className="card-subtitle mb-1 text-info">Kiosco</h6>
+                  <h4 className="mb-0">
+                    ${totalKioscoProfit.toLocaleString("es-AR")}
+                  </h4>
+                  {period === "range" && <small className="text-muted">Click para ver categorías</small>}
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className="col-md-4">
+              <div className="card border-danger shadow-sm h-100">
+                <div className="card-body py-3">
+                  <h6 className="card-subtitle mb-1 text-danger">Pago Fácil</h6>
+                  <h4 className="mb-0">
+                    ${totalPfProfit.toLocaleString("es-AR")}
+                  </h4>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4">
+              <div className="card border-warning shadow-sm h-100">
+                <div className="card-body py-3">
+                  <h6 className="card-subtitle mb-1 text-warning">Total</h6>
+                  <h4 className="mb-0">
+                    ${totalProfit.toLocaleString("es-AR")}
+                  </h4>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {showKioscoProfitByCategory && kioscoProfitByCategory && (
+            <div className="animate__animated animate__fadeIn">
+              <h5 className="text-muted mb-3">Ganancias Kiosco por Categoría</h5>
+              <div className="row g-2">
+                {[
+                  { label: "Factura B", val: kioscoProfitByCategory.facturaB },
+                  { label: "Remitos", val: kioscoProfitByCategory.remitos },
+                  { label: "Cyber", val: kioscoProfitByCategory.cyber },
+                  { label: "Cargas Virtuales", val: kioscoProfitByCategory.cargasVirtuales },
+                ].map((cat, i) => (
+                  <div key={i} className="col-md-3">
+                    <div className="card bg-light border-0 shadow-sm">
+                      <div className="card-body py-2 px-3">
+                        <h6 className="small mb-1 text-secondary">{cat.label}</h6>
+                        <h5 className="mb-0">${cat.val.toLocaleString("es-AR")}</h5>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

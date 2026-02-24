@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Row, Col, Card, Placeholder } from "react-bootstrap";
 import noteService from "../../services/noteService";
 import NoteCard from "./NoteCard";
 import { INote } from "../../types";
 import { useAuth } from "../../hooks/useAuth";
+import { useNotesQuery } from "../../hooks/useNotes";
 
 interface NoteListProps {
   onEdit: (note: INote) => void;
@@ -12,46 +13,29 @@ interface NoteListProps {
 }
 
 const NoteList = ({ onEdit, onDelete, selectedTag }: NoteListProps) => {
-  const [notes, setNotes] = useState<INote[]>([]);
-  const [filteredNotes, setFilteredNotes] = useState<INote[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const { user } = useAuth();
+  const { data: notes = [], isLoading: loading } = useNotesQuery();
 
+  // Mark unread notes as read
   useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const fetchedNotes = await noteService.getNotes();
-        setNotes(fetchedNotes);
-        
-        // Mark unread notes as read
-        if (user) {
-          const unreadNotes = fetchedNotes.filter(
-            (note: INote) => note.readBy && !note.readBy.includes(user._id)
-          );
-          
-          if (unreadNotes.length > 0) {
-            await Promise.all(
-              unreadNotes.map((note: INote) => noteService.markAsRead(note._id))
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching notes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotes();
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedTag) {
-      setFilteredNotes(
-        notes.filter((note) => note.tags.some((tag) => tag._id === selectedTag))
+    if (user && notes.length > 0) {
+      const unreadNotes = notes.filter(
+        (note: INote) => note.readBy && !note.readBy.includes(user._id)
       );
-    } else {
-      setFilteredNotes(notes);
+      
+      if (unreadNotes.length > 0) {
+        Promise.all(
+          unreadNotes.map((note: INote) => noteService.markAsRead(note._id))
+        ).catch(err => console.error("Error marking notes as read:", err));
+      }
     }
+  }, [user, notes]);
+
+  const filteredNotes = useMemo(() => {
+    if (selectedTag) {
+      return notes.filter((note) => note.tags.some((tag) => tag._id === selectedTag));
+    }
+    return notes;
   }, [selectedTag, notes]);
 
   return (

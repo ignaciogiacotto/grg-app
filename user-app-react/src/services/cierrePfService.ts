@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `${process.env.REACT_APP_API_URL}/api/cierre-pf`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/cierre-pf`;
 
 // Interface for BoletaEspecial in CierrePf
 export interface IBoletaEspecialCierre {

@@ -26,14 +26,18 @@ interface ChartProps {
   chartData: any; // Replace with a more specific type if available
   loading: boolean;
   error: string | null;
+  period?: string;
 }
 
-const Chart: React.FC<ChartProps> = ({ chartData, loading, error }) => {
+const Chart: React.FC<ChartProps> = ({ chartData, loading, error, period }) => {
+  const numLabels = chartData?.labels?.length || 0;
+  const isCompact = numLabels > 15;
+
   const options = {
     plugins: {
       title: {
         display: true,
-        text: "Historial de Ganancias Diarias",
+        text: "Historial de Ganancias",
         font: {
           size: 16,
         },
@@ -54,7 +58,8 @@ const Chart: React.FC<ChartProps> = ({ chartData, loading, error }) => {
         color: "#444",
         anchor: "end" as const,
         align: "top" as const,
-        offset: 5,
+        offset: isCompact ? 12 : 5,
+        rotation: isCompact ? -90 : 0,
         formatter: (value: number, ctx: any) => {
           // Solo mostramos la etiqueta en el último dataset para ver el total acumulado
           const datasets = ctx.chart.data.datasets;
@@ -63,14 +68,16 @@ const Chart: React.FC<ChartProps> = ({ chartData, loading, error }) => {
               (acc: number, ds: any) => acc + ds.data[ctx.dataIndex],
               0,
             );
-            return sum > 0 ? `$${sum.toLocaleString("es-AR")}` : "";
+            // Redondeamos al entero más cercano para evitar decimales en el gráfico
+            return sum > 0 ? `$${Math.round(sum).toLocaleString("es-AR")}` : "";
           } else {
             return "";
           }
         },
         font: {
-          size: 11,
+          size: isCompact ? 9 : 11,
         },
+        clip: false, // Permitir que las etiquetas se salgan del área del gráfico si es necesario
       },
       tooltip: {
         callbacks: {
@@ -91,10 +98,22 @@ const Chart: React.FC<ChartProps> = ({ chartData, loading, error }) => {
     },
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: isCompact ? 40 : 10, // Más espacio arriba para las etiquetas rotadas
+      },
+    },
     scales: {
       x: {
         stacked: true,
         grid: { display: false },
+        ticks: {
+          maxRotation: isCompact ? 90 : 45,
+          minRotation: isCompact ? 45 : 0,
+          font: {
+            size: isCompact ? 10 : 12,
+          },
+        },
       },
       y: {
         stacked: true,

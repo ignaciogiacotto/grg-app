@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDashboard } from "../../hooks/useDashboard";
 import Envelopes from "./Envelopes";
 import ProfitDashboard from "./ProfitDashboard";
@@ -30,6 +30,15 @@ const Dashboard: React.FC = () => {
   
   // 2. Estado de UI
   const [showKioscoProfitByCategory, setShowKioscoProfitByCategory] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState<boolean>(() => {
+    const saved = localStorage.getItem("showProfitBreakdown");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Guardar preferencia en localStorage
+  useEffect(() => {
+    localStorage.setItem("showProfitBreakdown", JSON.stringify(showBreakdown));
+  }, [showBreakdown]);
 
   // 3. Obtención de datos
   const {
@@ -72,7 +81,7 @@ const Dashboard: React.FC = () => {
 
           <div className="row g-3 mb-2">
             <div className="col-12 col-xl-8">
-              <Chart chartData={chartData} loading={loading} error={error} />
+              <Chart chartData={chartData} loading={loading} error={error} period={period} />
             </div>
             <div className="col-12 col-xl-4">
               <DistributionChart
@@ -92,6 +101,8 @@ const Dashboard: React.FC = () => {
             fetchKioscoProfitByCategory={fetchKioscoProfitByCategory}
             setShowKioscoProfitByCategory={setShowKioscoProfitByCategory}
             period={period}
+            showBreakdown={showBreakdown}
+            setShowBreakdown={setShowBreakdown}
           />
         </div>
 

@@ -1,17 +1,20 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import NoteList from './NoteList';
 import NoteModal from './NoteModal';
-import noteService from '../../services/noteService';
 import tagService from '../../services/tagService';
 import { INote, ITag } from '../../types';
+import { useDeleteNoteMutation } from '../../hooks/useNotes';
+import { useQueryClient } from '@tanstack/react-query';
 
 const NotesPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingNote, setEditingNote] = useState<INote | null>(null);
-  const [key, setKey] = useState(0); // To force re-render of NoteList
   const [tags, setTags] = useState<ITag[]>([]);
   const [selectedTag, setSelectedTag] = useState('');
+  
+  const queryClient = useQueryClient();
+  const deleteMutation = useDeleteNoteMutation();
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -31,13 +34,14 @@ const NotesPage = () => {
     setEditingNote(null);
   };
 
-  const refreshNotes = useCallback(() => {
-    setKey(prevKey => prevKey + 1);
-  }, []);
+  const refreshNotes = () => {
+    queryClient.invalidateQueries({ queryKey: ['notes'] });
+  };
 
   const handleDelete = async (id: string) => {
-    await noteService.deleteNote(id);
-    refreshNotes();
+    if (window.confirm('¿Estás seguro de eliminar esta nota?')) {
+      deleteMutation.mutate(id);
+    }
   };
 
   return (
@@ -59,7 +63,7 @@ const NotesPage = () => {
         </Form.Select>
       </Form.Group>
       
-      <NoteList key={key} onEdit={handleShowModal} onDelete={handleDelete} selectedTag={selectedTag} />
+      <NoteList onEdit={handleShowModal} onDelete={handleDelete} selectedTag={selectedTag} />
 
       {showModal && (
         <NoteModal 
