@@ -45,7 +45,7 @@ const NotesPage = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1>Notas</h1>
         <Button variant="primary" onClick={() => handleShowModal()}>

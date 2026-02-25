@@ -34,7 +34,7 @@ export const User = () => {
   );
 
   return (
-    <div>
+    <div className="container">
       <h2>Listado de Usuarios</h2>
       <div className="mb-3">
         {(loggedInUser?.role === "role_admin" ||

@@ -108,7 +108,10 @@ export const getDailyProfit = async (
     new Map();
 
   kioscoData.forEach((cierre: ICierreKiosco) => {
-    const date = cierre.date.toISOString().split("T")[0];
+    // Extraemos los componentes UTC para que coincida con la lógica de formatDate del frontend
+    const d = cierre.date;
+    const date = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+    
     if (!profitMap.has(date)) {
       profitMap.set(date, { kioscoProfit: 0, pfProfit: 0 });
     }
@@ -116,7 +119,9 @@ export const getDailyProfit = async (
   });
 
   pfData.forEach((cierre: ICierrePf) => {
-    const date = cierre.date.toISOString().split("T")[0];
+    const d = cierre.date;
+    const date = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+    
     if (!profitMap.has(date)) {
       profitMap.set(date, { kioscoProfit: 0, pfProfit: 0 });
     }

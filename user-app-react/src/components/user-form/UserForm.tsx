@@ -21,7 +21,7 @@ export const UserForm = () => {
   } = useUserForm(id);
 
   return (
-    <div>
+    <div className="container">
       <h2>{isEditing ? "Editar Usuario" : "Crear Usuario"}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">

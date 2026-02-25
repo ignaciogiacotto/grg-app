@@ -75,7 +75,8 @@ const Chart: React.FC<ChartProps> = ({ chartData, loading, error, period }) => {
           }
         },
         font: {
-          size: isCompact ? 9 : 11,
+          size: isCompact ? 11 : 14,
+          weight: "bold" as const,
         },
         clip: false, // Permitir que las etiquetas se salgan del área del gráfico si es necesario
       },
@@ -100,7 +101,7 @@ const Chart: React.FC<ChartProps> = ({ chartData, loading, error, period }) => {
     maintainAspectRatio: false,
     layout: {
       padding: {
-        top: isCompact ? 40 : 10, // Más espacio arriba para las etiquetas rotadas
+        top: isCompact ? 50 : 20, // Más espacio arriba para las etiquetas rotadas
       },
     },
     scales: {
@@ -111,7 +112,7 @@ const Chart: React.FC<ChartProps> = ({ chartData, loading, error, period }) => {
           maxRotation: isCompact ? 90 : 45,
           minRotation: isCompact ? 45 : 0,
           font: {
-            size: isCompact ? 10 : 12,
+            size: isCompact ? 11 : 13,
           },
         },
       },
@@ -120,6 +121,9 @@ const Chart: React.FC<ChartProps> = ({ chartData, loading, error, period }) => {
         beginAtZero: true,
         ticks: {
           callback: (value: any) => `$${value.toLocaleString("es-AR")}`,
+          font: {
+            size: 11,
+          },
         },
       },
     },

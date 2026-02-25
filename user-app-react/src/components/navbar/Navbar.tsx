@@ -73,7 +73,7 @@ export const Navbar = () => {
         <RBNavbar.Toggle aria-controls="basic-navbar-nav" />
         <RBNavbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            {(user?.role === "role_admin" || user?.role === "role_manager") && (
+            {user && user.role && (user.role === "role_admin" || user.role === "role_manager") && (
               <>
                 <NavLink
                   className="nav-link"
@@ -115,12 +115,12 @@ export const Navbar = () => {
                 </NavDropdown>
               </>
             )}
-            {user?.role === "role_employee" && (
+            {user && user.role === "role_employee" && (
               <NavLink className="nav-link" to="/cierre-pf" onClick={closeNav}>
                 Cierre PF
               </NavLink>
             )}
-            {user && (
+            {user && user._id && (
               <>
                 <NavLink className="nav-link" to="/users" onClick={closeNav}>
                   Usuarios
