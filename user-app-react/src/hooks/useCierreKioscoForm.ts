@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthContext } from "../store/auth";
 import {
-  getCierreKioscoById,
-  createCierreKiosco,
-  updateCierreKiosco,
-} from "../services/cierreKioscoService";
+  useCierreKioscoQuery,
+  useCreateCierreKioscoMutation,
+  useUpdateCierreKioscoMutation,
+} from "./useCierreKioscoQuery";
 
 interface ICierreKiosco {
+  _id?: string;
+  date: string;
   fac1: number;
   fac2: number;
   cyber: number;
@@ -22,7 +24,12 @@ interface ICierreKiosco {
 export const useCierreKioscoForm = (id?: string) => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<ICierreKiosco & { date: string }>({
+  const { data: cierreData, isLoading: isLoadingCierre } =
+    useCierreKioscoQuery(id);
+  const createMutation = useCreateCierreKioscoMutation();
+  const updateMutation = useUpdateCierreKioscoMutation();
+
+  const [formData, setFormData] = useState<ICierreKiosco>({
     date: new Date().toISOString().split("T")[0],
     fac1: 0,
     fac2: 0,
@@ -41,24 +48,13 @@ export const useCierreKioscoForm = (id?: string) => {
   const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
-    if (id) {
-      const fetchCierre = async () => {
-        try {
-          const data = await getCierreKioscoById(id);
-          const formattedDate = new Date(data.date).toISOString().split("T")[0];
-          setFormData({ ...data, date: formattedDate });
-        } catch (error) {
-          console.error("Error fetching cierre de kiosco:", error);
-          Swal.fire(
-            "Error",
-            "No se pudo cargar el cierre de kiosco.",
-            "error"
-          );
-        }
-      };
-      fetchCierre();
+    if (cierreData) {
+      const formattedDate = new Date(cierreData.date)
+        .toISOString()
+        .split("T")[0];
+      setFormData({ ...cierreData, date: formattedDate });
     }
-  }, [id]);
+  }, [cierreData]);
 
   useEffect(() => {
     const { fac1, fac2, cyber, cargVirt } = formData;
@@ -85,13 +81,16 @@ export const useCierreKioscoForm = (id?: string) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: name === "date" ? value : Number(value) });
+    setFormData({
+      ...formData,
+      [name]: name === "date" ? value : Number(value),
+    });
   };
 
   const handleCigarrosChange = (
     group: "facturaB" | "remito",
     field: "totalVenta" | "ganancia",
-    value: number
+    value: number,
   ) => {
     setFormData({
       ...formData,
@@ -117,7 +116,11 @@ export const useCierreKioscoForm = (id?: string) => {
       cigarros.remito.totalVenta === 0 ||
       cigarros.remito.ganancia === 0
     ) {
-      Swal.fire("Campos Incompletos", "Por favor, complete todos los campos. Si algún valor es cero, ingrese 0.", "warning");
+      Swal.fire(
+        "Campos Incompletos",
+        "Por favor, complete todos los campos. Si algún valor es cero, ingrese 0.",
+        "warning",
+      );
       return;
     }
 
@@ -147,26 +150,45 @@ export const useCierreKioscoForm = (id?: string) => {
     });
 
     if (result.isConfirmed) {
-      try {
-        if (id) {
-          await updateCierreKiosco(id, dataToSubmit);
-        } else {
-          await createCierreKiosco(dataToSubmit);
-        }
-        Swal.fire(
-          "¡Guardado!",
-          "El cierre ha sido guardado exitosamente.",
-          "success"
+      if (id) {
+        updateMutation.mutate(
+          { id, cierre: dataToSubmit as any },
+          {
+            onSuccess: () => {
+              Swal.fire(
+                "¡Guardado!",
+                "El cierre ha sido actualizado exitosamente.",
+                "success",
+              );
+              navigate("/dashboard");
+            },
+            onError: (error: any) => {
+              console.error("Error updating cierre:", error);
+              const errorMessage =
+                error.response?.data?.message ||
+                "Ocurrió un error al actualizar el cierre.";
+              Swal.fire("Error", errorMessage, "error");
+            },
+          },
         );
-        navigate("/dashboard");
-      } catch (error: any) {
-        console.error("Error saving cierre:", error);
-        const errorMessage = error.response?.data?.message || "Ocurrió un error al guardar el cierre.";
-        Swal.fire(
-          "Error",
-          errorMessage,
-          "error"
-        );
+      } else {
+        createMutation.mutate(dataToSubmit as any, {
+          onSuccess: () => {
+            Swal.fire(
+              "¡Guardado!",
+              "El cierre ha sido guardado exitosamente.",
+              "success",
+            );
+            navigate("/dashboard");
+          },
+          onError: (error: any) => {
+            console.error("Error saving cierre:", error);
+            const errorMessage =
+              error.response?.data?.message ||
+              "Ocurrió un error al guardar el cierre.";
+            Swal.fire("Error", errorMessage, "error");
+          },
+        });
       }
     }
   };
@@ -183,5 +205,7 @@ export const useCierreKioscoForm = (id?: string) => {
     handleSubmit,
     handleChange,
     handleCigarrosChange,
+    loading:
+      isLoadingCierre || createMutation.isPending || updateMutation.isPending,
   };
 };

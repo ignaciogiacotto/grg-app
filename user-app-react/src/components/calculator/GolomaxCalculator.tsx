@@ -1,12 +1,21 @@
 import { useState, useMemo } from "react";
-import { Form, Card, Row, Col, InputGroup, Button, Collapse } from "react-bootstrap";
-
+import {
+  Form,
+  Card,
+  Row,
+  Col,
+  InputGroup,
+  Button,
+  Collapse,
+} from "react-bootstrap";
 
 export function GolomaxCalculator() {
   // State for calculator inputs
   const [importe, setImporte] = useState<number | string>("");
   const [cantidad, setCantidad] = useState<number | string>(1);
-  const [impuestosInternos, setImpuestosInternos] = useState<number | string>("");
+  const [impuestosInternos, setImpuestosInternos] = useState<number | string>(
+    "",
+  );
 
   // State for editable tax rates
   const [ivaRate, setIvaRate] = useState<number>(21);
@@ -17,150 +26,168 @@ export function GolomaxCalculator() {
   const [showTaxes, setShowTaxes] = useState(true);
   const [isCashDiscountEnabled, setIsCashDiscountEnabled] = useState(true);
 
-
   // State for editable markups
   const [markup50, setMarkup50] = useState(50);
   const [markup70, setMarkup70] = useState(70);
   const [markup100, setMarkup100] = useState(100);
   const [isEditingMarkups, setIsEditingMarkups] = useState(false);
 
-    const { costoUnitario, iva, iibb, rg5329, costoTotal, discountAmount } =
-      useMemo(() => {
-        const numImporte = Number(String(importe).replace(",", ".")) || 0;
-        const numCantidad = Number(cantidad) || 1;
-        const numImpInternos = Number(String(impuestosInternos).replace(",", ".")) || 0;
+  const { costoUnitario, iva, iibb, rg5329, costoTotal, discountAmount } =
+    useMemo(() => {
+      const numImporte = Number(String(importe).replace(",", ".")) || 0;
+      const numCantidad = Number(cantidad) || 1;
+      const numImpInternos =
+        Number(String(impuestosInternos).replace(",", ".")) || 0;
 
-        const discountAmt = isCashDiscountEnabled ? numImporte * 0.03 : 0;
-        const neto = numImporte - discountAmt;
-        const taxableBase = neto; // Taxable base is the net amount after discount
-  
-        const ivaAmount = taxableBase * (ivaRate / 100);
-        const iibbAmount = taxableBase * (iibbRate / 100);
-        const rg5329Amount = isRg5329Enabled
-          ? taxableBase * (rg5329Rate / 100)
-          : 0;
-        
-        // Total cost is net amount + all taxes + internal taxes
-        const totalCost =
-          neto + ivaAmount + iibbAmount + rg5329Amount + numImpInternos;
-  
-        const finalUnitCost =
-          totalCost > 0 && numCantidad > 0
-            ? totalCost / numCantidad
-            : 0;
-  
-        return {
-          costoUnitario: finalUnitCost,
-          iva: ivaAmount,
-          iibb: iibbAmount,
-          rg5329: rg5329Amount,
-          costoTotal: totalCost,
-          discountAmount: discountAmt,
-        };
-      }, [importe, cantidad, impuestosInternos, ivaRate, iibbRate, rg5329Rate, isRg5329Enabled, isCashDiscountEnabled]);
-  
-    const handleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement>,
-      setter: (value: number | string) => void
-    ) => {
-      const value = e.target.value;
-      const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
-      const parts = sanitizedValue.split(".");
-      if (parts.length > 2) {
-        return;
-      }
-      setter(sanitizedValue);
-    };
-  
-    const venta50 = useMemo(
-      () => costoUnitario * (1 + markup50 / 100),
-      [costoUnitario, markup50]
-    );
-    const venta70 = useMemo(
-      () => costoUnitario * (1 + markup70 / 100),
-      [costoUnitario, markup70]
-    );
-    const venta100 = useMemo(
-      () => costoUnitario * (1 + markup100 / 100),
-      [costoUnitario, markup100]
-    );
-  
-    const formatCurrency = (value: number) => {
-      return new Intl.NumberFormat("es-AR", {
-        style: "currency",
-        currency: "ARS",
-      }).format(value);
-    };
+      const discountAmt = isCashDiscountEnabled ? numImporte * 0.03 : 0;
+      const neto = numImporte - discountAmt;
+      const taxableBase = neto; // Taxable base is the net amount after discount
+
+      const ivaAmount = taxableBase * (ivaRate / 100);
+      const iibbAmount = taxableBase * (iibbRate / 100);
+      const rg5329Amount = isRg5329Enabled
+        ? taxableBase * (rg5329Rate / 100)
+        : 0;
+
+      // Total cost is net amount + all taxes + internal taxes
+      const totalCost =
+        neto + ivaAmount + iibbAmount + rg5329Amount + numImpInternos;
+
+      const finalUnitCost =
+        totalCost > 0 && numCantidad > 0 ? totalCost / numCantidad : 0;
+
+      return {
+        costoUnitario: finalUnitCost,
+        iva: ivaAmount,
+        iibb: iibbAmount,
+        rg5329: rg5329Amount,
+        costoTotal: totalCost,
+        discountAmount: discountAmt,
+      };
+    }, [
+      importe,
+      cantidad,
+      impuestosInternos,
+      ivaRate,
+      iibbRate,
+      rg5329Rate,
+      isRg5329Enabled,
+      isCashDiscountEnabled,
+    ]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (value: number | string) => void,
+  ) => {
+    const value = e.target.value;
+    const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
+    const parts = sanitizedValue.split(".");
+    if (parts.length > 2) {
+      return;
+    }
+    setter(sanitizedValue);
+  };
+
+  const venta50 = useMemo(
+    () => costoUnitario * (1 + markup50 / 100),
+    [costoUnitario, markup50],
+  );
+  const venta70 = useMemo(
+    () => costoUnitario * (1 + markup70 / 100),
+    [costoUnitario, markup70],
+  );
+  const venta100 = useMemo(
+    () => costoUnitario * (1 + markup100 / 100),
+    [costoUnitario, markup100],
+  );
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+    }).format(value);
+  };
 
   const handleLimpiar = () => {
     setImporte("");
     setImpuestosInternos("");
     setCantidad(1);
   };
-  
-    return (
-      <Card bg="dark" text="white">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <Card.Title as="h5" className="mb-0">Calculadora de Precios - Golomax</Card.Title>
-          <Button variant="outline-light" size="sm" onClick={handleLimpiar} title="Borrar importe, impuestos internos y cantidad">
-            <i className="bi bi-arrow-counterclockwise me-1"></i>
-            Limpiar
-          </Button>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={8}>
-              <Form>
-                <Row className="mb-2">
-                  <Col>
-                    <Form.Group>
-                      <Form.Label>Importe</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="importe"
-                        value={importe}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          handleInputChange(e, setImporte)
-                        }
-                        onFocus={(e) => e.target.select()}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group>
-                      <Form.Label>Imp. Internos</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="impuestosInternos"
-                        value={impuestosInternos}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          handleInputChange(e, setImpuestosInternos)
-                        }
-                        onFocus={(e) => e.target.select()}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group>
-                      <Form.Label>Cantidad</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={cantidad}
-                        onChange={(e) => setCantidad(e.target.value)}
-                        onFocus={(e) => e.target.select()}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Form.Group>
-                    <Form.Check
-                        type="switch"
-                        id="cash-discount-switch"
-                        label="Descuento 3% Efectivo"
-                        checked={isCashDiscountEnabled}
-                        onChange={(e) => setIsCashDiscountEnabled(e.target.checked)}
+
+  return (
+    <Card bg="dark" text="white">
+      <Card.Header className="d-flex justify-content-between align-items-center">
+        <Card.Title as="h5" className="mb-0">
+          Calculadora de Precios - Golomax
+        </Card.Title>
+        <Button
+          variant="outline-light"
+          size="sm"
+          onClick={handleLimpiar}
+          title="Borrar importe, impuestos internos y cantidad">
+          <i className="bi bi-arrow-counterclockwise me-1"></i>
+          Limpiar
+        </Button>
+      </Card.Header>
+      <Card.Body>
+        <Row>
+          <Col md={8}>
+            <Form>
+              <Row className="g-1 g-md-2 mb-2">
+                <Col xs={4}>
+                  <Form.Group>
+                    <Form.Label>Importe</Form.Label>
+                    <Form.Control
+                      size="sm"
+                      type="text"
+                      name="importe"
+                      value={importe}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleInputChange(e, setImporte)
+                      }
+                      onFocus={(e) => e.target.select()}
                     />
-                </Form.Group>
+                  </Form.Group>
+                </Col>
+                <Col xs={4}>
+                  <Form.Group>
+                    <Form.Label>Imp. Int.</Form.Label>
+                    <Form.Control
+                      size="sm"
+                      type="text"
+                      name="impuestosInternos"
+                      value={impuestosInternos}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleInputChange(e, setImpuestosInternos)
+                      }
+                      onFocus={(e) => e.target.select()}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={4}>
+                  <Form.Group>
+                    <Form.Label>Cantidad</Form.Label>
+                    <Form.Control
+                      size="sm"
+                      type="text"
+                      value={cantidad}
+                      onChange={(e) => setCantidad(e.target.value)}
+                      onFocus={(e) => e.target.select()}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Form.Group className="mb-3">
+                {" "}
+                <Form.Check
+                  type="switch"
+                  id="cash-discount-switch"
+                  label="Descuento 3% Efectivo"
+                  checked={isCashDiscountEnabled}
+                  onChange={(e) => setIsCashDiscountEnabled(e.target.checked)}
+                  className="small"
+                />
+              </Form.Group>
             </Form>
           </Col>
           <Col md={4}>
@@ -172,17 +199,16 @@ export function GolomaxCalculator() {
                     variant="outline-light"
                     size="sm"
                     className="me-1 me-sm-2"
-                    onClick={() => setShowTaxes(!showTaxes)}
-                  >
+                    onClick={() => setShowTaxes(!showTaxes)}>
                     <i
-                      className={showTaxes ? "bi bi-eye-slash" : "bi bi-eye"}
-                    ></i>
+                      className={
+                        showTaxes ? "bi bi-eye-slash" : "bi bi-eye"
+                      }></i>
                   </Button>
                   <Button
                     variant="outline-light"
                     size="sm"
-                    onClick={() => setIsEditingRates(!isEditingRates)}
-                  >
+                    onClick={() => setIsEditingRates(!isEditingRates)}>
                     {isEditingRates ? (
                       <i className="bi bi-floppy"></i>
                     ) : (
@@ -289,7 +315,7 @@ export function GolomaxCalculator() {
             </Card>
           </Col>
         </Row>
-        <hr className="my-2" />
+        <hr className="my-2 border-secondary opacity-25" />
         <Card bg="secondary" className="p-1 p-sm-2 mb-2">
           <Row className="text-center mb-1 mb-sm-2 g-1 flex-nowrap flex-sm-wrap overflow-auto">
             <Col className="min-width-col">
@@ -299,12 +325,12 @@ export function GolomaxCalculator() {
               </span>
             </Col>
             {isCashDiscountEnabled && (
-                <Col className="min-width-col">
-                    <h6 className="small mb-0 mb-sm-1">-Desc. 3%</h6>
-                    <span>
-                    <small>{formatCurrency(discountAmount)}</small>
-                    </span>
-                </Col>
+              <Col className="min-width-col">
+                <h6 className="small mb-0 mb-sm-1">-Desc. 3%</h6>
+                <span>
+                  <small>{formatCurrency(discountAmount)}</small>
+                </span>
+              </Col>
             )}
             <Col className="min-width-col">
               <h6 className="small mb-0 mb-sm-1">+Int.</h6>
@@ -342,84 +368,85 @@ export function GolomaxCalculator() {
             </Col>
           </Row>
         </Card>
-        <hr />
-        <div className="d-flex justify-content-end align-items-center mb-3">
-          <h5 className="mb-0 me-3">Márgenes de Ganancia</h5>
-          <Button
-            variant="outline-light"
-            size="sm"
-            onClick={() => setIsEditingMarkups(!isEditingMarkups)}>
-            {isEditingMarkups ? (
-              <i className="bi bi-floppy"></i>
-            ) : (
-              <i className="bi bi-pencil-square"></i>
-            )}
-          </Button>
+        <hr className="my-2 border-secondary opacity-25" />
+
+        <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+          <div className="d-flex align-items-center">
+            <span
+              className="fw-bold text-uppercase small me-2 text-white"
+              style={{ letterSpacing: "0.5px" }}>
+              Márgenes
+            </span>
+            <Button
+              variant="outline-light"
+              size="sm"
+              className="py-0 px-1 border-0"
+              onClick={() => setIsEditingMarkups(!isEditingMarkups)}>
+              {isEditingMarkups ? (
+                <i className="bi bi-floppy-fill text-success small"></i>
+              ) : (
+                <i className="bi bi-pencil-square text-white-50 small"></i>
+              )}
+            </Button>
+          </div>
+          <div className="text-end">
+            <span className="text-white opacity-75 me-2">COSTO UNIT.:</span>
+            <span className="fw-bold text-info" style={{ fontSize: "1.3rem" }}>
+              {formatCurrency(costoUnitario)}
+            </span>
+          </div>
         </div>
-        <Row className="text-center">
-          <Col md={3} className="mb-3">
-            <h6 className="text-white">Costo Unitario Final</h6>
-            <h4 className="fw-bold">{formatCurrency(costoUnitario)}</h4>
-          </Col>
-          <Col md={3} className="mb-3">
-            <Card bg="secondary" text="white" className="h-100">
-              <Card.Body>
-                <InputGroup size="sm" className="mb-2">
-                  <Form.Control
-                    type="number"
-                    value={markup50}
-                    onChange={(e) => setMarkup50(Number(e.target.value))}
-                    readOnly={!isEditingMarkups}
-                    className="text-end"
-                  />
-                  <InputGroup.Text>%</InputGroup.Text>
-                </InputGroup>
-                <Card.Text as="h5" className="fw-semibold">
-                  {formatCurrency(venta50)}
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3} className="mb-3">
-            <Card bg="secondary" text="white" className="h-100">
-              <Card.Body>
-                <InputGroup size="sm" className="mb-2">
-                  <Form.Control
-                    type="number"
-                    value={markup70}
-                    onChange={(e) => setMarkup70(Number(e.target.value))}
-                    readOnly={!isEditingMarkups}
-                    className="text-end"
-                  />
-                  <InputGroup.Text>%</InputGroup.Text>
-                </InputGroup>
-                <Card.Text as="h5" className="fw-semibold">
-                  {formatCurrency(venta70)}
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3} className="mb-3">
-            <Card bg="secondary" text="white" className="h-100">
-              <Card.Body>
-                <InputGroup size="sm" className="mb-2">
-                  <Form.Control
-                    type="number"
-                    value={markup100}
-                    onChange={(e) => setMarkup100(Number(e.target.value))}
-                    readOnly={!isEditingMarkups}
-                    className="text-end"
-                  />
-                  <InputGroup.Text>%</InputGroup.Text>
-                </InputGroup>
-                <Card.Text as="h5" className="fw-semibold">
-                  {formatCurrency(venta100)}
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
+
+        <Row className="g-2">
+          {[
+            { value: markup50, setter: setMarkup50, price: venta50 },
+            { value: markup70, setter: setMarkup70, price: venta70 },
+            { value: markup100, setter: setMarkup100, price: venta100 },
+          ].map((item, idx) => (
+            <Col key={idx} xs={12} md={4}>
+              <Card
+                bg="secondary"
+                className="border-0 shadow-sm overflow-hidden">
+                <div
+                  className="d-flex align-items-stretch"
+                  style={{ minHeight: "45px" }}>
+                  {/* Lado del Porcentaje (Configuración) */}
+                  <div
+                    className="bg-white d-flex align-items-center px-3"
+                    style={{ minWidth: "85px" }}>
+                    <Form.Control
+                      type="number"
+                      value={item.value}
+                      onChange={(e) => item.setter(Number(e.target.value))}
+                      readOnly={!isEditingMarkups}
+                      className={`p-0 border-0 bg-transparent text-dark fw-bold ${!isEditingMarkups ? "pe-none" : "border-bottom border-dark"}`}
+                      style={{
+                        width: "35px",
+                        fontSize: "1rem",
+                        textAlign: "center",
+                        outline: "none",
+                        boxShadow: "none",
+                      }}
+                    />
+                    <span className="ms-1 small text-dark opacity-75 fw-bold">
+                      %
+                    </span>
+                  </div>
+
+                  {/* Lado del Precio (Resultado) */}
+                  <div className="flex-grow-1 d-flex align-items-center justify-content-end px-3 py-2">
+                    <span
+                      className="fw-bold text-white"
+                      style={{ fontSize: "1.2rem" }}>
+                      {formatCurrency(item.price)}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            </Col>
+          ))}
         </Row>
-      </Card.Body>
+      </Card.Body>{" "}
     </Card>
   );
 }

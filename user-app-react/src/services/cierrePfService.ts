@@ -11,6 +11,8 @@ export interface IBoletaEspecialCierre {
 
 // Interface for CierrePf
 export interface ICierrePf {
+  _id?: string;
+  date?: string;
   boletasEspeciales: IBoletaEspecialCierre[];
   cantidadTotalBoletas: number;
   recargas: number;

@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import { useDataFetcher } from "../../hooks/useDataFetcher";
 import {
-  getCierresKiosco,
-  deleteCierreKiosco,
-} from "../../services/cierreKioscoService";
+  useCierresKioscoQuery,
+  useDeleteCierreKioscoMutation,
+} from "../../hooks/useCierreKioscoQuery";
 import { formatDate } from "../../utils/formatters";
+import { Spinner } from "react-bootstrap";
+import Swal from "sweetalert2";
 
 interface ICierreKiosco {
   _id: string;
@@ -15,10 +16,31 @@ interface ICierreKiosco {
 }
 
 export const CierreKioscoHistory = () => {
-  const { data: history, handleDelete } = useDataFetcher<ICierreKiosco>(
-    getCierresKiosco,
-    deleteCierreKiosco
-  );
+  const { data: history = [], isLoading } = useCierresKioscoQuery();
+  const deleteMutation = useDeleteCierreKioscoMutation();
+
+  const handleDelete = async (id: string) => {
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "¡No podrás revertir esto!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, ¡bórralo!",
+    });
+
+    if (result.isConfirmed) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mt-5 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p>Cargando historial...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-5">
@@ -34,7 +56,7 @@ export const CierreKioscoHistory = () => {
           </tr>
         </thead>
         <tbody>
-          {history.map((cierre) => (
+          {(history as unknown as ICierreKiosco[]).map((cierre) => (
             <tr key={cierre._id}>
               <td>{formatDate(cierre.date)}</td>
               <td>$ {cierre.totalCaja}</td>
@@ -48,8 +70,9 @@ export const CierreKioscoHistory = () => {
                 </Link>
                 <button
                   onClick={() => handleDelete(cierre._id)}
-                  className="btn btn-danger">
-                  <i className="bi bi-trash"></i>
+                  className="btn btn-danger"
+                  disabled={deleteMutation.isPending}>
+                  {deleteMutation.isPending ? <Spinner size="sm" /> : <i className="bi bi-trash"></i>}
                 </button>
               </td>
             </tr>

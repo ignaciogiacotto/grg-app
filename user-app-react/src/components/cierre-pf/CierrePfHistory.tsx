@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
-import { useDataFetcher } from "../../hooks/useDataFetcher";
-import cierrePfService from "../../services/cierrePfService";
+import {
+  useCierresPfQuery,
+  useDeleteCierrePfMutation,
+} from "../../hooks/useCierrePfQuery";
 import { formatDate } from "../../utils/formatters";
+import { Spinner } from "react-bootstrap";
+import Swal from "sweetalert2";
 
 interface ICierrePf {
   _id: string;
@@ -10,10 +14,31 @@ interface ICierrePf {
 }
 
 const CierrePfHistory = () => {
-  const { data: history, handleDelete } = useDataFetcher<ICierrePf>(
-    cierrePfService.getCierresPf,
-    cierrePfService.deleteCierrePf
-  );
+  const { data: history = [], isLoading } = useCierresPfQuery();
+  const deleteMutation = useDeleteCierrePfMutation();
+
+  const handleDelete = async (id: string) => {
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "¡No podrás revertir esto!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, ¡bórralo!",
+    });
+
+    if (result.isConfirmed) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mt-5 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p>Cargando historial...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-5">
@@ -27,7 +52,7 @@ const CierrePfHistory = () => {
           </tr>
         </thead>
         <tbody>
-          {history.map((cierre) => (
+          {(history as unknown as ICierrePf[]).map((cierre) => (
             <tr key={cierre._id}>
               <td>{formatDate(cierre.date)}</td>
               <td>$ {cierre.totalGanancia}</td>
@@ -39,8 +64,9 @@ const CierrePfHistory = () => {
                 </Link>
                 <button
                   onClick={() => handleDelete(cierre._id)}
-                  className="btn btn-danger">
-                  <i className="bi bi-trash"></i>
+                  className="btn btn-danger"
+                  disabled={deleteMutation.isPending}>
+                  {deleteMutation.isPending ? <Spinner size="sm" /> : <i className="bi bi-trash"></i>}
                 </button>
               </td>
             </tr>

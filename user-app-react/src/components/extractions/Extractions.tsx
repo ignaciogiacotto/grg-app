@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Container,
   Row,
@@ -6,11 +6,17 @@ import {
   Button,
   Spinner,
 } from "react-bootstrap";
-import { useExtractions } from "../../hooks/useExtractions";
+import {
+  useExtractionsQuery,
+  useCreateExtractionMutation,
+  useUpdateExtractionMutation,
+  useArchiveAllCompletedMutation,
+} from "../../hooks/useExtractionsQuery";
 import { IExtraction } from "../../services/extractionService";
 import { QuickQuote } from "./QuickQuote";
 import { NewExtractionForm } from "./NewExtractionForm";
 import { ExtractionColumn } from "./ExtractionColumn";
+import Swal from "sweetalert2";
 
 const Extractions: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -20,21 +26,55 @@ const Extractions: React.FC = () => {
     type: "Western Union" | "Debit/MP";
   }>({ amount: 0, clientNumber: "", type: "Western Union" });
 
-  const {
-    pendingExtractions,
-    confirmedExtractions,
-    completedExtractions,
-    loading: loadingExtractions,
-    fetchExtractions,
-    handleCreate,
-    handleUpdate,
-    handleArchiveAll,
-  } = useExtractions();
+  const { data: extractions = [], isLoading: loadingExtractions, refetch } = useExtractionsQuery();
+  const createMutation = useCreateExtractionMutation();
+  const updateMutation = useUpdateExtractionMutation();
+  const archiveMutation = useArchiveAllCompletedMutation();
+
+  const pendingExtractions = useMemo(() => 
+    extractions.filter(e => e.status === 'Pendiente' || e.status === 'Disponible'),
+    [extractions]
+  );
+  const confirmedExtractions = useMemo(() => 
+    extractions.filter(e => e.status === 'Avisado'),
+    [extractions]
+  );
+  const completedExtractions = useMemo(() => 
+    extractions.filter(e => e.status === 'Completado'),
+    [extractions]
+  );
 
   const confirmedTotal = confirmedExtractions.reduce(
     (sum, extraction) => sum + extraction.amount,
     0
   );
+
+  const handleCreate = (amount: string, clientNumber: string, type: "Western Union" | "Debit/MP") => {
+    if (amount.trim() === "") {
+      Swal.fire("Atención", "El monto no puede estar vacío.", "warning");
+      return;
+    }
+    createMutation.mutate({ amount: Number(amount), clientNumber, type });
+  };
+
+  const handleUpdate = async (id: string, updates: any) => {
+    updateMutation.mutate({ id, updates });
+  };
+
+  const handleArchiveAll = async () => {
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción archivará todas las solicitudes completadas.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, archivarlas!",
+      cancelButtonText: "No, cancelar",
+    });
+
+    if (result.isConfirmed) {
+      archiveMutation.mutate();
+    }
+  };
 
   const handleStartEdit = (extraction: IExtraction) => {
     setEditingId(extraction._id);
@@ -51,7 +91,7 @@ const Extractions: React.FC = () => {
 
   const handleSaveEdit = async () => {
     if (!editingId) return;
-    await handleUpdate(editingId, editingData);
+    handleUpdate(editingId, editingData);
     setEditingId(null);
   };
 
@@ -60,7 +100,7 @@ const Extractions: React.FC = () => {
   };
 
   const columnProps = {
-    loading: loadingExtractions,
+    loading: loadingExtractions || updateMutation.isPending,
     onUpdate: handleUpdate,
     onStartEdit: handleStartEdit,
     onCancelEdit: handleCancelEdit,
@@ -78,14 +118,14 @@ const Extractions: React.FC = () => {
 
       <QuickQuote />
 
-      <NewExtractionForm handleCreate={handleCreate} loading={loadingExtractions} />
+      <NewExtractionForm handleCreate={handleCreate} loading={loadingExtractions || createMutation.isPending} />
 
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div>
           <Button
             variant="outline-secondary"
             size="sm"
-            onClick={() => fetchExtractions()}
+            onClick={() => refetch()}
             disabled={loadingExtractions}>
             {loadingExtractions ? (
               <Spinner as="span" animation="border" size="sm" />
@@ -99,8 +139,13 @@ const Extractions: React.FC = () => {
           variant="outline-danger"
           size="sm"
           onClick={handleArchiveAll}
-          disabled={loadingExtractions}>
-          <i className="bi bi-archive-fill me-1"></i> Eliminar completadas
+          disabled={loadingExtractions || archiveMutation.isPending}>
+          {archiveMutation.isPending ? (
+            <Spinner as="span" animation="border" size="sm" />
+          ) : (
+            <i className="bi bi-archive-fill me-1"></i>
+          )}
+          <span className="ms-1">Eliminar completadas</span>
         </Button>
       </div>
 

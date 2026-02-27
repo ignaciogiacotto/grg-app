@@ -30,8 +30,8 @@ export const useAuth = () => {
   const [isSessionWarningModalOpen, setIsSessionWarningModalOpen] =
     useState(false);
 
-  const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const sessionWarningTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const logoutTimerRef = useRef<number | null>(null);
+  const sessionWarningTimerRef = useRef<number | null>(null);
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
@@ -87,12 +87,12 @@ export const useAuth = () => {
         sessionWarningTimerRef.current = setTimeout(() => {
           console.log("Showing session warning modal");
           setIsSessionWarningModalOpen(true);
-        }, warningTime * 1000);
+        }, warningTime * 1000) as unknown as number;
       }
 
       logoutTimerRef.current = setTimeout(() => {
         logout();
-      }, expiresIn * 1000);
+      }, expiresIn * 1000) as unknown as number;
     }
 
     return () => {

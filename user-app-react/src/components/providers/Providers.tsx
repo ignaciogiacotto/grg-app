@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Container,
   Row,
@@ -7,56 +7,34 @@ import {
   Button,
   Modal,
   Form,
+  Spinner,
 } from "react-bootstrap";
 import {
   dropTargetForElements,
   draggable,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
-  getProviders,
-  updateProvider,
-  createProvider,
   IProvider,
 } from "../../services/providerService";
+import {
+  useProvidersQuery,
+  useUpdateProviderMutation,
+} from "../../hooks/useProviders";
 import Swal from "sweetalert2";
 
-const weekDays = [
-  "lunes",
-  "martes",
-  "miercoles",
-  "jueves",
-  "viernes",
-  "sabado",
-];
-
 const Providers: React.FC = () => {
-  const [days, setDays] = useState<IProvider[]>([]);
+  const { data: days = [], isLoading } = useProvidersQuery();
+  const updateMutation = useUpdateProviderMutation();
   const [showModal, setShowModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [newProviderName, setNewProviderName] = useState("");
-
-  useEffect(() => {
-    const fetchProviders = async () => {
-      let providers = await getProviders();
-      if (providers.length === 0) {
-        for (const day of weekDays) {
-          await createProvider(day);
-        }
-        providers = await getProviders();
-      }
-      setDays(providers);
-    };
-    fetchProviders();
-  }, []);
 
   const handleAddProvider = async () => {
     if (selectedDay && newProviderName.trim() !== "") {
       const day = days.find((d) => d.day === selectedDay);
       if (day) {
         const newProviders = [...day.providers, newProviderName.trim()];
-        await updateProvider(selectedDay, newProviders);
-        const providers = await getProviders();
-        setDays(providers);
+        updateMutation.mutate({ day: selectedDay, providers: newProviders });
         setShowModal(false);
         setNewProviderName("");
       }
@@ -67,9 +45,7 @@ const Providers: React.FC = () => {
     const day = days.find((d) => d.day === dayId);
     if (day) {
       const newProviders = day.providers.filter((p) => p !== providerName);
-      await updateProvider(dayId, newProviders);
-      const providers = await getProviders();
-      setDays(providers);
+      updateMutation.mutate({ day: dayId, providers: newProviders });
     }
   };
 
@@ -82,7 +58,7 @@ const Providers: React.FC = () => {
   }) => {
     const ref = useRef<HTMLDivElement | null>(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
       const el = ref.current;
       if (el) {
         const cleanup = draggable({
@@ -136,7 +112,7 @@ const Providers: React.FC = () => {
   const DroppableDay = ({ day }: { day: IProvider }) => {
     const ref = useRef<HTMLDivElement | null>(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
       const el = ref.current;
       if (el) {
         const cleanup = dropTargetForElements({
@@ -171,11 +147,8 @@ const Providers: React.FC = () => {
                 sourceData.provider,
               ];
 
-              await updateProvider(sourceData.dayId, newSourceProviders);
-              await updateProvider(targetData.dayId, newTargetProviders);
-
-              const providers = await getProviders();
-              setDays(providers);
+              updateMutation.mutate({ day: sourceData.dayId, providers: newSourceProviders });
+              updateMutation.mutate({ day: targetData.dayId, providers: newTargetProviders });
             }
           },
         });
@@ -201,6 +174,15 @@ const Providers: React.FC = () => {
       </Card.Body>
     );
   };
+
+  if (isLoading) {
+    return (
+      <Container className="my-4 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-3">Cargando proveedores...</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="my-4">
@@ -257,8 +239,8 @@ const Providers: React.FC = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cerrar
           </Button>
-          <Button variant="primary" onClick={handleAddProvider}>
-            Guardar
+          <Button variant="primary" onClick={handleAddProvider} disabled={updateMutation.isPending}>
+            {updateMutation.isPending ? "Guardando..." : "Guardar"}
           </Button>
         </Modal.Footer>
       </Modal>

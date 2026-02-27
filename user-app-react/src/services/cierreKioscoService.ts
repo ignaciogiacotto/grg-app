@@ -3,6 +3,8 @@ import axios from "axios";
 const API_URL = `${import.meta.env.VITE_API_URL}/api/cierre-kiosco`;
 
 export interface ICierreKiosco {
+  _id: string;
+  date: string;
   fac1: number;
   fac2: number;
   cyber: number;

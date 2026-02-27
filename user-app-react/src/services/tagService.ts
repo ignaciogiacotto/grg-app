@@ -22,9 +22,17 @@ export const createTag = async (tag: any) => {
   return response.data;
 };
 
+export const deleteTag = async (id: string) => {
+  const token = getAuthToken();
+  await axios.delete(`${API_URL}/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
 const tagService = {
     getTags,
     createTag,
+    deleteTag,
 };
 
 export default tagService;

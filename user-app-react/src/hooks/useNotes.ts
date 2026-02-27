@@ -9,6 +9,14 @@ export const useNotesQuery = () => {
   });
 };
 
+export const useUnreadNotesCountQuery = () => {
+  return useQuery<number>({
+    queryKey: ['unreadNotesCount'],
+    queryFn: noteService.getUnreadCount,
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+  });
+};
+
 export const useDeleteNoteMutation = () => {
   const queryClient = useQueryClient();
   
