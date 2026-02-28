@@ -436,7 +436,7 @@ export function BebidasCalculator() {
                   style={{ minHeight: "45px" }}>
                   <div
                     className="bg-white d-flex align-items-center px-3"
-                    style={{ minWidth: "85px" }}>
+                    style={{ minWidth: "100px" }}>
                     <Form.Control
                       type="number"
                       value={item.value}
@@ -444,7 +444,7 @@ export function BebidasCalculator() {
                       readOnly={!isEditingMarkups}
                       className={`p-0 border-0 bg-transparent text-dark fw-bold ${!isEditingMarkups ? "pe-none" : "border-bottom border-dark"}`}
                       style={{
-                        width: "35px",
+                        width: "60px",
                         fontSize: "1rem",
                         textAlign: "center",
                         outline: "none",
