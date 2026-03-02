@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import {
   useCierresKioscoQuery,
   useDeleteCierreKioscoMutation,
-} from "../../hooks/useCierreKioscoQuery";
+} from "../../hooks/cierre-kiosco/useCierreKioscoQuery";
 import { formatDate } from "../../utils/formatters";
 import { Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";

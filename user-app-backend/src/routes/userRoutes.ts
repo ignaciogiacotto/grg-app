@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { validateUser } from "../middlewares/validationMiddleware";
+import { validate } from "../middlewares/validationMiddleware";
+import { userSchema } from "../schemas/userSchema";
 import * as userController from "../controllers/userController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -201,8 +202,8 @@ const router = Router();
 
 router.get("/", protect, userController.getUsers);
 router.get("/:id", protect, userController.getUserById);
-router.post("/", protect, validateUser, userController.createUser);
-router.put("/:id", protect, validateUser, userController.updateUser);
+router.post("/", protect, validate(userSchema), userController.createUser);
+router.put("/:id", protect, validate(userSchema), userController.updateUser);
 router.delete("/:id", protect, userController.deleteUser);
 
 router.post("/refresh-token", protect, userController.refreshToken);

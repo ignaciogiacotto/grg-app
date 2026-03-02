@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import {
   useCierresPfQuery,
   useDeleteCierrePfMutation,
-} from "../../hooks/useCierrePfQuery";
+} from "../../hooks/cierre-pf/useCierrePfQuery";
 import { formatDate } from "../../utils/formatters";
 import { Spinner } from "react-bootstrap";
 import Swal from "sweetalert2";

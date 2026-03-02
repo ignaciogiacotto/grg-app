@@ -1,149 +1,69 @@
-import { useState, useMemo } from "react";
-import {
-  Form,
-  Card,
-  Row,
-  Col,
-  InputGroup,
-  Button,
-  Collapse,
-} from "react-bootstrap";
+import { useMemo } from "react";
+import { Form, Card, Row, Col, Button } from "react-bootstrap";
+import { useCalculatorState } from "../../hooks/calculator/useCalculatorState";
+import { useMarkups } from "../../hooks/calculator/useMarkups";
+import { formatCurrency } from "../../utils/formatters";
+import { MarkupCard } from "./shared/MarkupCard";
+import { CalculatorHeader } from "./shared/CalculatorHeader";
+import { TaxRatesCard, TaxConfig } from "./shared/TaxRatesCard";
 
 export function GolomaxCalculator() {
-  // State for calculator inputs
-  const [importe, setImporte] = useState<number | string>("");
-  const [cantidad, setCantidad] = useState<number | string>(1);
-  const [impuestosInternos, setImpuestosInternos] = useState<number | string>(
-    "",
-  );
+  const s = useCalculatorState();
+  const { markups, isEditingMarkups, setIsEditingMarkups, calculatePrices } =
+    useMarkups();
 
-  // State for editable tax rates
-  const [ivaRate, setIvaRate] = useState<number>(21);
-  const [iibbRate, setIibbRate] = useState<number>(4);
-  const [rg5329Rate, setRg5329Rate] = useState<number>(3);
-  const [isEditingRates, setIsEditingRates] = useState(false);
-  const [isRg5329Enabled, setIsRg5329Enabled] = useState(false);
-  const [showTaxes, setShowTaxes] = useState(true);
-  const [isCashDiscountEnabled, setIsCashDiscountEnabled] = useState(true);
+  const { costoUnitario, taxes, costoTotal, discountAmount } = useMemo(() => {
+    const numImporte = Number(s.importe) || 0;
+    const numCantidad = Number(s.cantidad) || 1;
+    const numInt = Number(s.impuestosInternos) || 0;
 
-  // State for editable markups
-  const [markup50, setMarkup50] = useState(50);
-  const [markup70, setMarkup70] = useState(70);
-  const [markup100, setMarkup100] = useState(100);
-  const [isEditingMarkups, setIsEditingMarkups] = useState(false);
+    const disc = s.isCashDiscountEnabled ? numImporte * 0.03 : 0;
+    const neto = numImporte - disc;
 
-  const { costoUnitario, iva, iibb, rg5329, costoTotal, discountAmount } =
-    useMemo(() => {
-      const numImporte = Number(String(importe).replace(",", ".")) || 0;
-      const numCantidad = Number(cantidad) || 1;
-      const numImpInternos =
-        Number(String(impuestosInternos).replace(",", ".")) || 0;
+    const iva = neto * (s.ivaRate / 100);
+    const iibb = neto * (s.iibbRate / 100);
+    const rg5329 = s.isRg5329Enabled ? neto * (s.rg5329Rate / 100) : 0;
+    const finalCost = neto + iva + iibb + rg5329 + numInt;
 
-      const discountAmt = isCashDiscountEnabled ? numImporte * 0.03 : 0;
-      const neto = numImporte - discountAmt;
-      const taxableBase = neto; // Taxable base is the net amount after discount
+    const taxConfig: TaxConfig[] = [
+      { label: "IVA", rate: s.ivaRate, setRate: s.setIvaRate, amount: iva },
+      { label: "IIBB", rate: s.iibbRate, setRate: s.setIibbRate, amount: iibb },
+      {
+        label: "RG 5329",
+        rate: s.rg5329Rate,
+        setRate: s.setRg5329Rate,
+        amount: rg5329,
+        show: s.isRg5329Enabled,
+      },
+    ];
 
-      const ivaAmount = taxableBase * (ivaRate / 100);
-      const iibbAmount = taxableBase * (iibbRate / 100);
-      const rg5329Amount = isRg5329Enabled
-        ? taxableBase * (rg5329Rate / 100)
-        : 0;
+    return {
+      costoUnitario: finalCost > 0 ? finalCost / numCantidad : 0,
+      taxes: taxConfig,
+      costoTotal: finalCost,
+      discountAmount: disc,
+    };
+  }, [s]);
 
-      // Total cost is net amount + all taxes + internal taxes
-      const totalCost =
-        neto + ivaAmount + iibbAmount + rg5329Amount + numImpInternos;
-
-      const finalUnitCost =
-        totalCost > 0 && numCantidad > 0 ? totalCost / numCantidad : 0;
-
-      return {
-        costoUnitario: finalUnitCost,
-        iva: ivaAmount,
-        iibb: iibbAmount,
-        rg5329: rg5329Amount,
-        costoTotal: totalCost,
-        discountAmount: discountAmt,
-      };
-    }, [
-      importe,
-      cantidad,
-      impuestosInternos,
-      ivaRate,
-      iibbRate,
-      rg5329Rate,
-      isRg5329Enabled,
-      isCashDiscountEnabled,
-    ]);
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setter: (value: number | string) => void,
-  ) => {
-    const value = e.target.value;
-    const sanitizedValue = value.replace(/,/, ".").replace(/[^\d.]/g, "");
-    const parts = sanitizedValue.split(".");
-    if (parts.length > 2) {
-      return;
-    }
-    setter(sanitizedValue);
-  };
-
-  const venta50 = useMemo(
-    () => costoUnitario * (1 + markup50 / 100),
-    [costoUnitario, markup50],
-  );
-  const venta70 = useMemo(
-    () => costoUnitario * (1 + markup70 / 100),
-    [costoUnitario, markup70],
-  );
-  const venta100 = useMemo(
-    () => costoUnitario * (1 + markup100 / 100),
-    [costoUnitario, markup100],
-  );
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-    }).format(value);
-  };
-
-  const handleLimpiar = () => {
-    setImporte("");
-    setImpuestosInternos("");
-    setCantidad(1);
-  };
+  const { venta50, venta70, venta100 } = calculatePrices(costoUnitario);
 
   return (
     <Card bg="dark" text="white">
-      <Card.Header className="d-flex justify-content-between align-items-center">
-        <Card.Title as="h5" className="mb-0">
-          Calculadora de Precios - Golomax
-        </Card.Title>
-        <Button
-          variant="outline-light"
-          size="sm"
-          onClick={handleLimpiar}
-          title="Borrar importe, impuestos internos y cantidad">
-          <i className="bi bi-arrow-counterclockwise me-1"></i>
-          Limpiar
-        </Button>
-      </Card.Header>
+      <CalculatorHeader title="Calculadora - Golomax" onClear={s.clearInputs} />
       <Card.Body>
-        <Row>
+        <Row className="mb-3">
           <Col md={8}>
             <Form>
-              <Row className="g-1 g-md-2 mb-2">
+              <Row className="g-2 mb-2">
                 <Col xs={4}>
                   <Form.Group>
-                    <Form.Label>Importe</Form.Label>
+                    <Form.Label>Neto</Form.Label>
                     <Form.Control
                       size="sm"
                       type="text"
-                      name="importe"
-                      value={importe}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(e, setImporte)
+                      value={s.importe}
+                      onChange={(e: any) =>
+                        s.handleInputChange(e, s.setImporte)
                       }
                       onFocus={(e) => e.target.select()}
                     />
@@ -155,10 +75,9 @@ export function GolomaxCalculator() {
                     <Form.Control
                       size="sm"
                       type="text"
-                      name="impuestosInternos"
-                      value={impuestosInternos}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleInputChange(e, setImpuestosInternos)
+                      value={s.impuestosInternos}
+                      onChange={(e: any) =>
+                        s.handleInputChange(e, s.setImpuestosInternos)
                       }
                       onFocus={(e) => e.target.select()}
                     />
@@ -166,287 +85,120 @@ export function GolomaxCalculator() {
                 </Col>
                 <Col xs={4}>
                   <Form.Group>
-                    <Form.Label>Cantidad</Form.Label>
+                    <Form.Label>Cant.</Form.Label>
                     <Form.Control
                       size="sm"
                       type="text"
-                      value={cantidad}
-                      onChange={(e) => setCantidad(e.target.value)}
+                      value={s.cantidad}
+                      onChange={(e: any) =>
+                        s.handleInputChange(e, s.setCantidad)
+                      }
                       onFocus={(e) => e.target.select()}
                     />
                   </Form.Group>
                 </Col>
               </Row>
-              <Form.Group className="mb-3">
-                {" "}
-                <Form.Check
-                  type="switch"
-                  id="cash-discount-switch"
-                  label="Descuento 3% Efectivo"
-                  checked={isCashDiscountEnabled}
-                  onChange={(e) => setIsCashDiscountEnabled(e.target.checked)}
-                  className="small"
-                />
-              </Form.Group>
+              <Form.Check
+                type="switch"
+                label="Descuento 3% Efectivo"
+                checked={s.isCashDiscountEnabled}
+                onChange={(e) => s.setIsCashDiscountEnabled(e.target.checked)}
+                className="small"
+              />
             </Form>
           </Col>
           <Col md={4}>
-            <Card bg="secondary" className="p-1 p-sm-2">
-              <div className="d-flex justify-content-between align-items-center mb-1 mb-sm-2">
-                <h6 className="mb-0 small">Tasas de Impuestos</h6>
-                <div>
-                  <Button
-                    variant="outline-light"
-                    size="sm"
-                    className="me-1 me-sm-2"
-                    onClick={() => setShowTaxes(!showTaxes)}>
-                    <i
-                      className={
-                        showTaxes ? "bi bi-eye-slash" : "bi bi-eye"
-                      }></i>
-                  </Button>
-                  <Button
-                    variant="outline-light"
-                    size="sm"
-                    onClick={() => setIsEditingRates(!isEditingRates)}>
-                    {isEditingRates ? (
-                      <i className="bi bi-floppy"></i>
-                    ) : (
-                      <i className="bi bi-pencil-square"></i>
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <Collapse in={showTaxes}>
-                <div>
-                  <Row className="align-items-center mb-1 g-1">
-                    <Col xs={12} sm={3} className="text-start text-sm-center">
-                      <Form.Label className="mb-0 small">IVA</Form.Label>
-                    </Col>
-                    <Col xs={5} sm={3}>
-                      <InputGroup size="sm">
-                        <Form.Control
-                          type="text"
-                          value={ivaRate}
-                          onChange={(e) => setIvaRate(Number(e.target.value))}
-                          readOnly={!isEditingRates}
-                          className="text-end"
-                        />
-                        <InputGroup.Text>%</InputGroup.Text>
-                      </InputGroup>
-                    </Col>
-                    <Col xs={7} sm={6}>
-                      <Form.Control
-                        size="sm"
-                        readOnly
-                        disabled
-                        value={formatCurrency(iva)}
-                        className="text-end"
-                      />
-                    </Col>
-                  </Row>
-                  <Row className="align-items-center mb-1 g-1">
-                    <Col xs={12} sm={3} className="text-start text-sm-center">
-                      <Form.Label className="mb-0 small">IIBB</Form.Label>
-                    </Col>
-                    <Col xs={5} sm={3}>
-                      <InputGroup size="sm">
-                        <Form.Control
-                          type="text"
-                          value={iibbRate}
-                          onChange={(e) => setIibbRate(Number(e.target.value))}
-                          readOnly={!isEditingRates}
-                          className="text-end"
-                        />
-                        <InputGroup.Text>%</InputGroup.Text>
-                      </InputGroup>
-                    </Col>
-                    <Col xs={7} sm={6}>
-                      <Form.Control
-                        size="sm"
-                        readOnly
-                        disabled
-                        value={formatCurrency(iibb)}
-                        className="text-end"
-                      />
-                    </Col>
-                  </Row>
-                  {isRg5329Enabled && (
-                    <Row className="align-items-center g-1">
-                      <Col xs={12} sm={3} className="text-start text-sm-center">
-                        <Form.Label className="mb-0 small">5329</Form.Label>
-                      </Col>
-                      <Col xs={5} sm={3}>
-                        <InputGroup size="sm">
-                          <Form.Control
-                            type="number"
-                            value={rg5329Rate}
-                            onChange={(e) =>
-                              setRg5329Rate(Number(e.target.value))
-                            }
-                            readOnly={!isEditingRates}
-                            className="text-end"
-                          />
-                          <InputGroup.Text>%</InputGroup.Text>
-                        </InputGroup>
-                      </Col>
-                      <Col xs={7} sm={6}>
-                        <Form.Control
-                          size="sm"
-                          readOnly
-                          disabled
-                          value={formatCurrency(rg5329)}
-                          className="text-end"
-                        />
-                      </Col>
-                    </Row>
-                  )}
-                  <hr className="border-light my-1" />
-                  <Form.Check
-                    type="switch"
-                    id="rg5329-switch"
-                    label="Aplicar RG 5329"
-                    checked={isRg5329Enabled}
-                    onChange={(e) => setIsRg5329Enabled(e.target.checked)}
-                    className="small"
-                  />
-                </div>
-              </Collapse>
-            </Card>
+            <TaxRatesCard
+              taxes={taxes}
+              isEditing={s.isEditingRates}
+              setIsEditing={s.setIsEditingRates}
+              showTaxes={s.showTaxes}
+              setShowTaxes={s.setShowTaxes}
+              switches={
+                <Form.Check
+                  type="switch"
+                  label="Aplicar RG 5329"
+                  checked={s.isRg5329Enabled}
+                  onChange={(e) => s.setIsRg5329Enabled(e.target.checked)}
+                  className="small"
+                />
+              }
+            />
           </Col>
         </Row>
-        <hr className="my-2 border-secondary opacity-25" />
-        <Card bg="secondary" className="p-1 p-sm-2 mb-2">
-          <Row className="text-center mb-1 mb-sm-2 g-1 flex-nowrap flex-sm-wrap overflow-auto">
+
+        <Card bg="secondary" className="p-2 mb-3 border-0">
+          <Row className="text-center g-1 flex-nowrap overflow-auto small">
             <Col className="min-width-col">
-              <h6 className="small mb-0 mb-sm-1">Importe</h6>
-              <span>
-                <small>{formatCurrency(Number(importe))}</small>
-              </span>
+              <h6 className="mb-0">Importe</h6>
+              {formatCurrency(Number(s.importe))}
             </Col>
-            {isCashDiscountEnabled && (
-              <Col className="min-width-col">
-                <h6 className="small mb-0 mb-sm-1">-Desc. 3%</h6>
-                <span>
-                  <small>{formatCurrency(discountAmount)}</small>
-                </span>
+            {s.isCashDiscountEnabled && (
+              <Col className="min-width-col text-warning">
+                <h6 className="mb-0">-Desc. 3%</h6>
+                {formatCurrency(discountAmount)}
               </Col>
             )}
             <Col className="min-width-col">
-              <h6 className="small mb-0 mb-sm-1">+Int.</h6>
-              <span>
-                <small>{formatCurrency(Number(impuestosInternos))}</small>
-              </span>
+              <h6 className="mb-0">+Int.</h6>
+              {formatCurrency(Number(s.impuestosInternos))}
             </Col>
             <Col className="min-width-col">
-              <h6 className="small mb-0 mb-sm-1">+IVA</h6>
-              <span>
-                <small>{formatCurrency(iva)}</small>
-              </span>
+              <h6 className="mb-0">+IVA</h6>
+              {formatCurrency(taxes[0].amount)}
             </Col>
             <Col className="min-width-col">
-              <h6 className="small mb-0 mb-sm-1">+IIBB</h6>
-              <span>
-                <small>{formatCurrency(iibb)}</small>
-              </span>
+              <h6 className="mb-0">+IIBB</h6>
+              {formatCurrency(taxes[1].amount)}
             </Col>
-            {isRg5329Enabled && (
+            {s.isRg5329Enabled && (
               <Col className="min-width-col">
-                <h6 className="small mb-0 mb-sm-1">+5329</h6>
-                <span>
-                  <small>{formatCurrency(rg5329)}</small>
-                </span>
+                <h6 className="mb-0">+5329</h6>
+                {formatCurrency(taxes[2].amount)}
               </Col>
             )}
-            <Col className="min-width-col">
-              <h6 className="small mb-0 mb-sm-1">= Costo Total</h6>
-              <span>
-                <strong className="text-light">
-                  {formatCurrency(costoTotal)}
-                </strong>
-              </span>
+            <Col className="min-width-col border-start">
+              <h6 className="mb-0">= Total</h6>
+              <strong className="text-light">
+                {formatCurrency(costoTotal)}
+              </strong>
             </Col>
           </Row>
         </Card>
-        <hr className="my-2 border-secondary opacity-25" />
 
         <div className="d-flex justify-content-between align-items-center mb-2 px-1">
           <div className="d-flex align-items-center">
-            <span
-              className="fw-bold text-uppercase small me-2 text-white"
-              style={{ letterSpacing: "0.5px" }}>
-              Márgenes
-            </span>
+            <span className="fw-bold small me-2">MÁRGENES</span>
             <Button
               variant="outline-light"
               size="sm"
               className="py-0 px-1 border-0"
               onClick={() => setIsEditingMarkups(!isEditingMarkups)}>
-              {isEditingMarkups ? (
-                <i className="bi bi-floppy-fill text-success small"></i>
-              ) : (
-                <i className="bi bi-pencil-square text-white-50 small"></i>
-              )}
+              <i
+                className={`bi ${isEditingMarkups ? "bi-floppy-fill text-success" : "bi-pencil-square"} small`}></i>
             </Button>
           </div>
           <div className="text-end">
-            <span className="text-white opacity-75 me-2">COSTO UNIT.:</span>
-            <span className="fw-bold text-info" style={{ fontSize: "1.3rem" }}>
+            <span className="opacity-75 small me-2">COSTO UNIT.:</span>
+            <span className="fw-bold text-info fs-5">
               {formatCurrency(costoUnitario)}
             </span>
           </div>
         </div>
 
         <Row className="g-2">
-          {[
-            { value: markup50, setter: setMarkup50, price: venta50 },
-            { value: markup70, setter: setMarkup70, price: venta70 },
-            { value: markup100, setter: setMarkup100, price: venta100 },
-          ].map((item, idx) => (
+          {markups.map((m, idx) => (
             <Col key={idx} xs={12} md={4}>
-              <Card
-                bg="secondary"
-                className="border-0 shadow-sm overflow-hidden">
-                <div
-                  className="d-flex align-items-stretch"
-                  style={{ minHeight: "45px" }}>
-                  {/* Lado del Porcentaje (Configuración) */}
-                  <div
-                    className="bg-white d-flex align-items-center px-3"
-                    style={{ minWidth: "100px" }}>
-                    <Form.Control
-                      type="number"
-                      value={item.value}
-                      onChange={(e) => item.setter(Number(e.target.value))}
-                      readOnly={!isEditingMarkups}
-                      className={`p-0 border-0 bg-transparent text-dark fw-bold ${!isEditingMarkups ? "pe-none" : "border-bottom border-dark"}`}
-                      style={{
-                        width: "60px",
-                        fontSize: "1rem",
-                        textAlign: "center",
-                        outline: "none",
-                        boxShadow: "none",
-                      }}
-                    />
-                    <span className="ms-1 small text-dark opacity-75 fw-bold">
-                      %
-                    </span>
-                  </div>
-
-                  {/* Lado del Precio (Resultado) */}
-                  <div className="flex-grow-1 d-flex align-items-center justify-content-end px-3 py-2">
-                    <span
-                      className="fw-bold text-white"
-                      style={{ fontSize: "1.2rem" }}>
-                      {formatCurrency(item.price)}
-                    </span>
-                  </div>
-                </div>
-              </Card>
+              <MarkupCard
+                value={m.value}
+                setter={m.setter}
+                price={idx === 0 ? venta50 : idx === 1 ? venta70 : venta100}
+                isEditing={isEditingMarkups}
+              />
             </Col>
           ))}
         </Row>
-      </Card.Body>{" "}
+      </Card.Body>
     </Card>
   );
 }

@@ -3,8 +3,8 @@ import { Row, Col, Card, Placeholder } from "react-bootstrap";
 import noteService from "../../services/noteService";
 import NoteCard from "./NoteCard";
 import { INote } from "../../types";
-import { useAuth } from "../../hooks/useAuth";
-import { useNotesQuery } from "../../hooks/useNotes";
+import { useAuth } from "../../hooks/auth/useAuth";
+import { useNotesQuery } from "../../hooks/notes/useNotes";
 
 interface NoteListProps {
   onEdit: (note: INote) => void;

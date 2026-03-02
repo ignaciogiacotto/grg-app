@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import * as reportService from '../services/reportService';
+import * as reportService from '../../services/reportService';
 
 export const useDailyProfitReportQuery = (
   period: "day" | "week" | "month" | "year" | "range",

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as providerService from '../services/providerService';
-import { IProvider } from '../services/providerService';
+import * as providerService from '../../services/providerService';
+import { IProvider } from '../../services/providerService';
 
 export const useProvidersQuery = () => {
   return useQuery<IProvider[]>({

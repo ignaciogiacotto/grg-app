@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as userService from '../services/userService';
-import { IUser } from '../services/userService';
+import * as userService from '../../services/userService';
+import { IUser } from '../../services/userService';
 
 export const useUsersQuery = (page: number, pageSize: number = 10) => {
   return useQuery({

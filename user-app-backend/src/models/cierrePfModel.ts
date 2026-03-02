@@ -14,6 +14,7 @@ export interface ICierrePf extends Document {
   recargasSubtotal: number;
   westernUnionQuantity: number;
   totalGanancia: number;
+  createdBy: Schema.Types.ObjectId;
 }
 
 const cierrePfSchema = new Schema<ICierrePf>({
@@ -30,6 +31,7 @@ const cierrePfSchema = new Schema<ICierrePf>({
   recargasSubtotal: { type: Number, default: 0 },
   westernUnionQuantity: { type: Number, default: 0 },
   totalGanancia: { type: Number, default: 0 },
+  createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 
 export default model<ICierrePf>("CierrePf", cierrePfSchema);

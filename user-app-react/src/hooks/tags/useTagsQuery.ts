@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import tagService from '../services/tagService';
-import { ITag } from '../types';
+import tagService from '../../services/tagService';
+import { ITag } from '../../types';
 
 export const useTagsQuery = () => {
   return useQuery<ITag[]>({

@@ -1,96 +1,52 @@
-import { IBoletaFormItem } from "../../hooks/useCierrePfForm";
 import React from "react";
 import { formatCurrency } from "../../utils/formatters";
+import { UseFormRegister } from "react-hook-form";
+import { CierrePfInput } from "../../schemas/cierrePfSchema";
 
 interface BoletaEspecialRowProps {
-  item: IBoletaFormItem;
-  dispatch: React.Dispatch<any>;
+  index: number;
+  register: UseFormRegister<CierrePfInput>;
+  watchedBoleta: any;
+  handleEnterKey: (e: React.KeyboardEvent) => void;
 }
 
 export const BoletaEspecialRow = ({
-  item,
-  dispatch,
+  index,
+  register,
+  watchedBoleta,
+  handleEnterKey,
 }: BoletaEspecialRowProps) => {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      const inputs = Array.from(
-        document.querySelectorAll(".cantidad-input")
-      ) as HTMLInputElement[];
-
-      const currentIndex = inputs.findIndex((input) => input === e.currentTarget);
-
-      if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
-        inputs[currentIndex + 1].focus();
-      }
-    }
-  };
+  const subtotal = (Number(watchedBoleta?.quantity) || 0) * (Number(watchedBoleta?.value) || 0);
 
   return (
-    <tr key={item.id}>
-      <td>{item.label}</td>
-      <td>
+    <tr>
+      <td>{watchedBoleta?.name}</td>
+      <td className="text-center">
         <input
           type="text"
-          className="form-control form-control-sm text-end cantidad-input"
-          style={{ maxWidth: "100px" }}
-          value={item.quantity}
-          onChange={(e) =>
-            dispatch({
-              type: "UPDATE_BOLETA",
-              payload: {
-                id: item.id,
-                field: "quantity",
-                value: parseInt(e.target.value) || 0,
-              },
-            })
-          }
+          className="form-control form-control-sm text-center cantidad-input"
+          style={{ maxWidth: "80px", margin: "0 auto" }}
+          {...register(`boletasEspeciales.${index}.quantity`, { valueAsNumber: true })}
           onFocus={(e) => e.target.select()}
-          onKeyDown={handleKeyDown}
+          onKeyDown={handleEnterKey}
         />
       </td>
-      <td>
-        <div className="input-group input-group-sm" style={{ maxWidth: "120px" }}>
+      <td className="text-center">
+        <div
+          className="input-group input-group-sm justify-content-center"
+          style={{ maxWidth: "120px", margin: "0 auto" }}
+        >
+          <span className="input-group-text">$</span>
           <input
             type="text"
-            className="form-control text-end"
-            value={item.value as number}
-            readOnly={!item.editable}
-            onChange={(e) =>
-              dispatch({
-                type: "UPDATE_BOLETA",
-                payload: {
-                  id: item.id,
-                  field: "value",
-                  value: parseInt(e.target.value) || 0,
-                },
-              })
-            }
-            onFocus={(e) => e.target.select()}
+            className="form-control text-center bg-light"
+            value={watchedBoleta?.value || 0}
+            readOnly
           />
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            type="button"
-            onClick={() =>
-              dispatch({ type: "TOGGLE_BOLETA_EDIT", payload: item.id })
-            }>
-            {item.editable ? (
-              <i className="bi bi-floppy"></i>
-            ) : (
-              <i className="bi bi-pencil-square"></i>
-            )}
-          </button>
         </div>
       </td>
-      <td>
-        <input
-          type="text"
-          className="form-control form-control-sm text-end"
-          readOnly
-          value={formatCurrency(Number(item.subtotal) || 0)}
-          style={{ maxWidth: "120px" }}
-        />
+      <td className="text-end">
+        {formatCurrency(subtotal)}
       </td>
     </tr>
   );

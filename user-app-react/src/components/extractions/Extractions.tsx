@@ -11,7 +11,7 @@ import {
   useCreateExtractionMutation,
   useUpdateExtractionMutation,
   useArchiveAllCompletedMutation,
-} from "../../hooks/useExtractionsQuery";
+} from "../../hooks/extractions/useExtractionsQuery";
 import { IExtraction } from "../../services/extractionService";
 import { QuickQuote } from "./QuickQuote";
 import { NewExtractionForm } from "./NewExtractionForm";

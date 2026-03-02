@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
-import { refreshToken as refreshTokenService } from "../services/authService";
+import { refreshToken as refreshTokenService } from "../../services/authService";
 
 interface User {
   _id: string;
@@ -21,7 +21,7 @@ interface DecodedToken {
 
 export const useAuth = () => {
   const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem("token")
+    localStorage.getItem("token"),
   );
   const [user, setUser] = useState<User | null>(() => {
     const storedUser = localStorage.getItem("user");

@@ -4,8 +4,8 @@ import {
   useEnvelopeSummaryQuery,
   useDashboardSummaryStatsQuery,
   useKioscoProfitByCategoryQuery,
-} from "../../hooks/useDashboardQuery";
-import { useUnreadNotesCountQuery } from "../../hooks/useNotes";
+} from "../../hooks/dashboard/useDashboardQuery";
+import { useUnreadNotesCountQuery } from "../../hooks/notes/useNotes";
 import Envelopes from "./Envelopes";
 import ProfitDashboard from "./ProfitDashboard";
 import Filters from "./Filters";

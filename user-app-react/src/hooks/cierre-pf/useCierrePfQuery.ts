@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import cierrePfService, { ICierrePf, IBoletaEspecialDB } from '../services/cierrePfService';
+import cierrePfService, { ICierrePf, IBoletaEspecialDB } from '../../services/cierrePfService';
 import Swal from 'sweetalert2';
 
 export const useCierresPfQuery = () => {

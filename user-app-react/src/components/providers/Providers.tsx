@@ -19,7 +19,7 @@ import {
 import {
   useProvidersQuery,
   useUpdateProviderMutation,
-} from "../../hooks/useProviders";
+} from "../../hooks/providers/useProviders";
 import Swal from "sweetalert2";
 
 const Providers: React.FC = () => {

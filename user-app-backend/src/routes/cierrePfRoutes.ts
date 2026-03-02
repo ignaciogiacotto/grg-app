@@ -2,6 +2,8 @@ import { Router } from "express";
 import * as cierrePfController from "../controllers/cierrePfController";
 import { protect, authorize } from "../middlewares/authMiddleware";
 import { Role } from "../models/userModel";
+import { validate } from "../middlewares/validationMiddleware";
+import { cierrePfSchema } from "../schemas/cierrePfSchema";
 
 const router = Router();
 
@@ -10,6 +12,7 @@ router.post(
   "/",
   protect,
   authorize(Role.Admin, Role.Manager, Role.Employee),
+  validate(cierrePfSchema),
   cierrePfController.createCierrePf
 );
 router.get(
@@ -56,6 +59,7 @@ router.put(
   "/:id",
   protect,
   authorize(Role.Admin, Role.Manager, Role.Employee),
+  validate(cierrePfSchema),
   cierrePfController.updateCierrePf
 );
 router.delete(

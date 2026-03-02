@@ -1,104 +1,57 @@
-import { IBoletaFormItem } from "../../hooks/useCierrePfForm";
-import React from "react";
+import React, { useState } from "react";
 import { formatCurrency } from "../../utils/formatters";
+import { UseFormRegister, useWatch, Control } from "react-hook-form";
+import { CierrePfInput } from "../../schemas/cierrePfSchema";
 
 interface RecargasRowProps {
-  item: IBoletaFormItem;
-  state: any;
-  dispatch: React.Dispatch<any>;
+  register: UseFormRegister<CierrePfInput>;
+  control: Control<CierrePfInput>;
+  handleEnterKey: (e: React.KeyboardEvent) => void;
 }
 
-export const RecargasRow = ({ item, state, dispatch }: RecargasRowProps) => {
-  const { recargasSubtotal, recargasSubtotalEditable } = state;
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      const inputs = Array.from(
-        document.querySelectorAll(".cantidad-input"),
-      ) as HTMLInputElement[];
-
-      const currentIndex = inputs.findIndex(
-        (input) => input === e.currentTarget,
-      );
-
-      if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
-        inputs[currentIndex + 1].focus();
-      }
-    }
-  };
+export const RecargasRow = ({ register, control, handleEnterKey }: RecargasRowProps) => {
+  const [isEditable, setIsEditable] = useState(false);
+  const subtotal = useWatch({
+    control,
+    name: "recargasSubtotal",
+  });
 
   return (
-    <tr key={item.id}>
-      <td>{item.label}</td>
-      <td>
+    <tr>
+      <td className="fw-semibold text-primary">Recargas</td>
+      <td className="text-center">
         <input
           type="text"
-          className="form-control form-control-sm text-end cantidad-input"
-          style={{ maxWidth: "100px" }}
-          value={item.quantity}
-          onChange={(e) =>
-            dispatch({
-              type: "SET_FIELD",
-              payload: {
-                field: "recargas",
-                value: parseInt(e.target.value) || 0,
-              },
-            })
-          }
+          className="form-control form-control-sm text-center cantidad-input"
+          style={{ maxWidth: "80px", margin: "0 auto" }}
+          {...register("recargas", { valueAsNumber: true })}
           onFocus={(e) => e.target.select()}
-          onKeyDown={handleKeyDown}
+          onKeyDown={handleEnterKey}
         />
       </td>
-      <td>
+      <td className="text-center">
         <div
-          className="input-group input-group-sm"
-          style={{ maxWidth: "120px" }}>
+          className="input-group input-group-sm justify-content-center"
+          style={{ maxWidth: "120px", margin: "0 auto" }}
+        >
+          <span className="input-group-text">$</span>
           <input
             type="text"
-            className="form-control text-end"
-            value={recargasSubtotal}
-            readOnly={!recargasSubtotalEditable}
-            onChange={(e) =>
-              dispatch({
-                type: "SET_FIELD",
-                payload: {
-                  field: "recargasSubtotal",
-                  value: parseInt(e.target.value) || 0,
-                },
-              })
-            }
+            className="form-control text-center"
+            readOnly={!isEditable}
+            {...register("recargasSubtotal", { valueAsNumber: true })}
             onFocus={(e) => e.target.select()}
           />
           <button
-            className="btn btn-outline-secondary btn-sm"
+            className={`btn ${isEditable ? "btn-success" : "btn-outline-secondary"}`}
             type="button"
-            onClick={() =>
-              dispatch({
-                type: "SET_FIELD",
-                payload: {
-                  field: "recargasSubtotalEditable",
-                  value: !recargasSubtotalEditable,
-                },
-              })
-            }>
-            {recargasSubtotalEditable ? (
-              <i className="bi bi-floppy"></i>
-            ) : (
-              <i className="bi bi-pencil-square"></i>
-            )}
+            onClick={() => setIsEditable(!isEditable)}>
+            {isEditable ? <i className="bi bi-floppy"></i> : <i className="bi bi-pencil"></i>}
           </button>
         </div>
       </td>
-      <td>
-        <input
-          type="text"
-          className="form-control form-control-sm text-end"
-          readOnly
-          value={formatCurrency(Number(item.subtotal) || 0)}
-          style={{ maxWidth: "120px" }}
-        />
+      <td className="text-end">
+        {formatCurrency(subtotal || 0)}
       </td>
     </tr>
   );

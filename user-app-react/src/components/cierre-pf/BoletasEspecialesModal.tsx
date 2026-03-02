@@ -194,8 +194,9 @@ const BoletasEspecialesModal = ({
             <Form.Group className="mb-3">
               <Form.Label className="fw-semibold">Valor</Form.Label>
               <Form.Control
-                type="number"
-                min={0}
+                type="text"
+                className="text-center"
+                style={{ maxWidth: "140px" }}
                 value={newBoletaValue}
                 onChange={(e) => setNewBoletaValue(Number(e.target.value) || 0)}
               />
@@ -294,8 +295,9 @@ const BoletasEspecialesModal = ({
                       <td style={{ width: "25%" }}>
                         {editingBoleta?._id === boleta._id ? (
                           <Form.Control
-                            type="number"
+                            type="text"
                             size="sm"
+                            className="text-center"
                             value={editingBoleta.value}
                             onChange={(e) =>
                               setEditingBoleta({

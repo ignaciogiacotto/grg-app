@@ -4,7 +4,7 @@ import NoteList from './NoteList';
 import NoteModal from './NoteModal';
 import tagService from '../../services/tagService';
 import { INote, ITag } from '../../types';
-import { useDeleteNoteMutation } from '../../hooks/useNotes';
+import { useDeleteNoteMutation } from '../../hooks/notes/useNotes';
 import { useQueryClient } from '@tanstack/react-query';
 
 const NotesPage = () => {

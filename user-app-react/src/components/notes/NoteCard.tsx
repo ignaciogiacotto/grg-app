@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Button, Badge } from "react-bootstrap";
 import { INote } from "../../types";
 import { format } from "date-fns";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
 
 interface NoteCardProps {
   note: INote;

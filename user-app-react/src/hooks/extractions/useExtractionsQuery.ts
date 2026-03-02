@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as extractionService from '../services/extractionService';
-import { IExtraction, ExtractionStatus } from '../services/extractionService';
+import * as extractionService from '../../services/extractionService';
+import { IExtraction, ExtractionStatus } from '../../services/extractionService';
 import Swal from 'sweetalert2';
 
 export const useExtractionsQuery = () => {

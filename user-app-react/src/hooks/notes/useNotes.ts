@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import noteService from '../services/noteService';
-import { INote } from '../types';
+import noteService from '../../services/noteService';
+import { INote } from '../../types';
 
 export const useNotesQuery = () => {
   return useQuery<INote[]>({

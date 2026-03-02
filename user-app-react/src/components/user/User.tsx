@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../store/auth";
 import { getUsers, deleteUser } from "../../services/userService";
-import { usePaginatedData } from "../../hooks/usePaginatedData";
+import { usePaginatedData } from "../../hooks/common/usePaginatedData";
 
 interface IUser {
   _id: string;
