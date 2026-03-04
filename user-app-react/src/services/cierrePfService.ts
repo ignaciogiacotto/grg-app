@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_URL = `${import.meta.env.VITE_API_URL}/api/cierre-pf`;
+import api from "./api";
 
 // Interface for BoletaEspecial in CierrePf
 export interface IBoletaEspecialCierre {
@@ -29,69 +27,39 @@ export interface IBoletaEspecialDB {
   order?: number;
 }
 
-const getAuthToken = () => {
-  return localStorage.getItem("token");
-};
+const API_ENDPOINT = "/api/cierre-pf";
 
 // CierrePf services
 const getCierresPf = async () => {
-  const token = getAuthToken();
-  const response = await axios.get(API_URL, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(API_ENDPOINT);
   return response.data;
 };
 
 const getCierrePfById = async (id: string) => {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_URL}/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(`${API_ENDPOINT}/${id}`);
   return response.data;
 };
 
 const createCierrePf = async (cierre: ICierrePf) => {
-  const token = getAuthToken();
-  const response = await axios.post(API_URL, cierre, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.post(API_ENDPOINT, cierre);
   return response.data;
 };
 
 const updateCierrePf = async (id: string, cierre: ICierrePf) => {
-  const token = getAuthToken();
-  const response = await axios.put(`${API_URL}/${id}`, cierre, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.put(`${API_ENDPOINT}/${id}`, cierre);
   return response.data;
 };
 
 const deleteCierrePf = async (id: string) => {
-  const token = getAuthToken();
-  const response = await axios.delete(`${API_URL}/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.delete(`${API_ENDPOINT}/${id}`);
   return response.data;
 };
 
 // BoletaEspecial services
-const BOLETAS_API_URL = `${API_URL}/boletas`;
+const BOLETAS_API_ENDPOINT = `${API_ENDPOINT}/boletas`;
 
 const getBoletasEspeciales = async (): Promise<IBoletaEspecialDB[]> => {
-  const token = getAuthToken();
-  const response = await axios.get(BOLETAS_API_URL, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.get(BOLETAS_API_ENDPOINT);
   return response.data;
 };
 
@@ -100,10 +68,7 @@ const createBoletaEspecial = async (boleta: {
   value: number;
   order?: number;
 }): Promise<IBoletaEspecialDB> => {
-  const token = getAuthToken();
-  const response = await axios.post(BOLETAS_API_URL, boleta, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.post(BOLETAS_API_ENDPOINT, boleta);
   return response.data;
 };
 
@@ -111,18 +76,12 @@ const updateBoletaEspecial = async (
   id: string,
   boleta: { name: string; value: number; order?: number }
 ): Promise<IBoletaEspecialDB> => {
-  const token = getAuthToken();
-  const response = await axios.put(`${BOLETAS_API_URL}/${id}`, boleta, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.put(`${BOLETAS_API_ENDPOINT}/${id}`, boleta);
   return response.data;
 };
 
 const deleteBoletaEspecial = async (id: string) => {
-  const token = getAuthToken();
-  await axios.delete(`${BOLETAS_API_URL}/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  await api.delete(`${BOLETAS_API_ENDPOINT}/${id}`);
 };
 
 const cierrePfService = {

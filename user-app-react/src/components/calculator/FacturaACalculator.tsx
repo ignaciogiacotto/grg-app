@@ -82,7 +82,7 @@ export function FacturaACalculator() {
               </Row>
             </Form>
           </Col>
-          <Col md={4}>
+          <Col md={4} className="p-3">
             <TaxRatesCard
               taxes={taxes}
               isEditing={s.isEditingRates}

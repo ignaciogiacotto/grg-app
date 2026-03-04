@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import logger from "./logger";
 
 dotenv.config();
 
@@ -10,9 +11,9 @@ const connectDB = async () => {
       throw new Error("MONGO_URI is not defined in the environment variables");
     }
     await mongoose.connect(mongoURI);
-    console.log("MongoDB connected");
+    logger.info("MongoDB connected");
   } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
+    logger.error("Error connecting to MongoDB:", error);
     process.exit(1);
   }
 };

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import logger from '../config/logger';
 
 // --- Interfaces para definir la estructura de la respuesta de la API ---
 interface PayGroup {
@@ -78,7 +79,7 @@ async function fetchRate(destinationCurrency: string, destinationCountry: string
       throw new Error(`Could not extract fx_rate for ${destinationCurrency} from API response.`);
     }
   } catch (error) {
-    console.error(`Error fetching rate for ${destinationCurrency}:`, error);
+    logger.error(`Error fetching rate for ${destinationCurrency}:`, error);
     throw new Error(`Failed to fetch exchange rate for ${destinationCurrency}.`);
   }
 }
@@ -98,7 +99,7 @@ export const getExchangeRates = async (countryCode: string): Promise<{ rate: num
     const rate = await fetchRate(countryParams.currency, countryParams.country);
     return { rate };
   } catch (error) {
-    console.error(`Error fetching rate for ${countryCode}:`, error);
+    logger.error(`Error fetching rate for ${countryCode}:`, error);
     throw error; // Re-lanza el error para que el controlador lo atrape
   }
 };

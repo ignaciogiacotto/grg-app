@@ -1,16 +1,12 @@
-import axios from "axios";
-
-const API_URL = `${import.meta.env.VITE_API_URL}/api/reports`;
-
-const getAuthToken = () => {
-  return localStorage.getItem("token");
-};
+import api from "./api";
 
 export interface DailyProfit {
   date: string;
   kioscoProfit: number;
   pfProfit: number;
 }
+
+const API_ENDPOINT = "/api/reports";
 
 export const getDailyProfitReport = async (
   period: "day" | "week" | "month" | "year" | "range",
@@ -21,11 +17,7 @@ export const getDailyProfitReport = async (
   startDate?: string,
   endDate?: string
 ): Promise<DailyProfit[]> => {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_URL}/daily-profit`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const response = await api.get(`${API_ENDPOINT}/daily-profit`, {
     params: {
       period,
       year,
@@ -46,12 +38,7 @@ export interface EnvelopeSummary {
 }
 
 export const getEnvelopeSummary = async (): Promise<EnvelopeSummary> => {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_URL}/envelope-summary`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(`${API_ENDPOINT}/envelope-summary`);
   return response.data;
 };
 
@@ -66,11 +53,7 @@ export const getKioscoProfitByCategoryReport = async (
   startDate: string,
   endDate: string
 ): Promise<KioscoProfitByCategory> => {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_URL}/kiosco-profit-by-category`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const response = await api.get(`${API_ENDPOINT}/kiosco-profit-by-category`, {
     params: {
       startDate,
       endDate,

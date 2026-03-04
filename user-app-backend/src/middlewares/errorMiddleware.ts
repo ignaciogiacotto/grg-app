@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import logger from "../config/logger";
 
 export const errorHandler = (
   err: Error,
@@ -6,6 +7,6 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error(err.stack);
-  res.status(500).send("Something broke!");
+  logger.error(err.stack);
+  res.status(500).json({ message: "Internal Server Error" });
 };

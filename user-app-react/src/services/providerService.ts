@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_URL = `${import.meta.env.VITE_API_URL}/api/providers`;
+import api from "./api";
 
 export interface IProvider {
   _id: string;
@@ -8,31 +6,15 @@ export interface IProvider {
   providers: string[];
 }
 
-const getAuthToken = () => {
-  return localStorage.getItem("token");
-};
+const API_ENDPOINT = "/api/providers";
 
 export const getProviders = async (): Promise<IProvider[]> => {
-  const token = getAuthToken();
-  const response = await axios.get(API_URL, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(API_ENDPOINT);
   return response.data;
 };
 
 export const createProvider = async (day: string): Promise<IProvider> => {
-  const token = getAuthToken();
-  const response = await axios.post(
-    API_URL,
-    { day },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await api.post(API_ENDPOINT, { day });
   return response.data;
 };
 
@@ -40,15 +22,6 @@ export const updateProvider = async (
   day: string,
   providers: string[]
 ): Promise<IProvider> => {
-  const token = getAuthToken();
-  const response = await axios.put(
-    `${API_URL}/${day}`,
-    { providers },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await api.put(`${API_ENDPOINT}/${day}`, { providers });
   return response.data;
 };

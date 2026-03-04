@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_URL = `${import.meta.env.VITE_API_URL}/api/cierre-kiosco`;
+import api from "./api";
 
 export interface ICierreKiosco {
   _id: string;
@@ -18,56 +16,29 @@ export interface ICierreKiosco {
   createdBy?: string;
 }
 
-const getAuthToken = () => {
-  return localStorage.getItem("token");
-};
+const API_ENDPOINT = "/api/cierre-kiosco";
 
 export const getCierresKiosco = async () => {
-  const token = getAuthToken();
-  const response = await axios.get(API_URL, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(API_ENDPOINT);
   return response.data;
 };
 
 export const getCierreKioscoById = async (id: string) => {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_URL}/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(`${API_ENDPOINT}/${id}`);
   return response.data;
 };
 
 export const createCierreKiosco = async (cierre: ICierreKiosco) => {
-  const token = getAuthToken();
-  const response = await axios.post(API_URL, cierre, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.post(API_ENDPOINT, cierre);
   return response.data;
 };
 
 export const updateCierreKiosco = async (id: string, cierre: ICierreKiosco) => {
-  const token = getAuthToken();
-  const response = await axios.put(`${API_URL}/${id}`, cierre, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.put(`${API_ENDPOINT}/${id}`, cierre);
   return response.data;
 };
 
 export const deleteCierreKiosco = async (id: string) => {
-  const token = getAuthToken();
-  const response = await axios.delete(`${API_URL}/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.delete(`${API_ENDPOINT}/${id}`);
   return response.data;
 };

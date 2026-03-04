@@ -14,6 +14,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger';
 import { findUserByUsernameAndPassword, generateToken } from "./services/userService";
 import connectDB from "./config/database";
+import logger from "./config/logger";
 
 const app = express();
 const port = 4000;
@@ -56,5 +57,5 @@ app.use(errorHandler);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  logger.info(`Server is running on port ${port}`);
 });

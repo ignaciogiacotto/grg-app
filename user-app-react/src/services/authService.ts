@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import api from "./api";
 
 interface LoginResponse {
   token: string;
@@ -10,19 +8,14 @@ export const login = async (
   username: string,
   password: string
 ): Promise<LoginResponse> => {
-  const response = await axios.post(`${API_URL}/login`, { username, password });
+  const response = await api.post(`/login`, { username, password });
   return response.data;
 };
 
 export const refreshToken = async (token: string): Promise<LoginResponse> => {
-  const response = await axios.post(
-    `${API_URL}/users/refresh-token`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const response = await api.post(
+    `/users/refresh-token`,
+    {}
   );
   return response.data;
 };

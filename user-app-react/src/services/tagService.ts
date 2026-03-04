@@ -1,38 +1,25 @@
-import axios from 'axios';
+import api from "./api";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/tags`;
-
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
+const API_ENDPOINT = "/api/tags";
 
 export const getTags = async () => {
-  const token = getAuthToken();
-  const response = await axios.get(API_URL, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.get(API_ENDPOINT);
   return response.data;
 };
 
 export const createTag = async (tag: any) => {
-  const token = getAuthToken();
-  const response = await axios.post(API_URL, tag, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.post(API_ENDPOINT, tag);
   return response.data;
 };
 
 export const deleteTag = async (id: string) => {
-  const token = getAuthToken();
-  await axios.delete(`${API_URL}/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  await api.delete(`${API_ENDPOINT}/${id}`);
 };
 
 const tagService = {
-    getTags,
-    createTag,
-    deleteTag,
+  getTags,
+  createTag,
+  deleteTag,
 };
 
 export default tagService;

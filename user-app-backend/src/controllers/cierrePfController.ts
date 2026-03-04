@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as cierrePfService from "../services/cierrePfService";
+import logger from "../config/logger";
 
 export const createCierrePf = async (req: Request, res: Response) => {
   try {
@@ -11,7 +12,7 @@ export const createCierrePf = async (req: Request, res: Response) => {
     });
     res.status(201).json(newCierre);
   } catch (error: any) {
-    console.error("Error creating cierre PF:", error);
+    logger.error("Error creating cierre PF:", error);
     res.status(error.statusCode || 500).json({ 
       message: error.message || "Error creating cierre PF" 
     });

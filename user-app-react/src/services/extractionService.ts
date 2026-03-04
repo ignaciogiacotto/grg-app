@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_URL = `${import.meta.env.VITE_API_URL}/api/extractions`;
+import api from "./api";
 
 export type ExtractionStatus = "Pendiente" | "Disponible" | "Avisado" | "Completado";
 
@@ -19,15 +17,10 @@ export interface IExtraction {
   updatedAt: string;
 }
 
-const getAuthToken = () => {
-  return localStorage.getItem("token");
-};
+const API_ENDPOINT = "/api/extractions";
 
 export const getExtractions = async (): Promise<IExtraction[]> => {
-  const token = getAuthToken();
-  const response = await axios.get(API_URL, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.get(API_ENDPOINT);
   return response.data;
 };
 
@@ -36,10 +29,7 @@ export const createExtraction = async (data: {
   clientNumber: string;
   type: "Western Union" | "Debit/MP";
 }): Promise<IExtraction> => {
-  const token = getAuthToken();
-  const response = await axios.post(API_URL, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.post(API_ENDPOINT, data);
   return response.data;
 };
 
@@ -52,17 +42,11 @@ export const updateExtraction = async (
     type?: "Western Union" | "Debit/MP";
   }
 ): Promise<IExtraction> => {
-  const token = getAuthToken();
-  const response = await axios.patch(`${API_URL}/${id}`, updates, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.patch(`${API_ENDPOINT}/${id}`, updates);
   return response.data;
 };
 
 export const archiveAllCompleted = async (): Promise<any> => {
-  const token = getAuthToken();
-  const response = await axios.delete(API_URL, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.delete(API_ENDPOINT);
   return response.data;
 };

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as cierreKioscoService from "../services/cierreKioscoService";
+import logger from "../config/logger";
 
 export const createCierreKiosco = async (req: Request, res: Response) => {
   try {
@@ -11,7 +12,7 @@ export const createCierreKiosco = async (req: Request, res: Response) => {
     });
     res.status(201).json(newCierreKiosco);
   } catch (error: any) {
-    console.error("Error creating cierre Kiosco:", error);
+    logger.error("Error creating cierre Kiosco:", error);
     res.status(error.statusCode || 500).json({ 
       message: error.message || "Error creating cierre Kiosco" 
     });

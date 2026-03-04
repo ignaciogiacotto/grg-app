@@ -1,23 +1,14 @@
-import axios from "axios";
-
-const API_URL = `${import.meta.env.VITE_API_URL}/api/exchange-rates`;
-
-const getAuthToken = () => {
-  return localStorage.getItem("token");
-};
+import api from "./api";
 
 export interface ExchangeRate {
   rate: number;
 }
 
+const API_ENDPOINT = "/api/exchange-rates";
+
 export const getExchangeRate = async (
   countryCode: string
 ): Promise<ExchangeRate> => {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_URL}/${countryCode}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(`${API_ENDPOINT}/${countryCode}`);
   return response.data;
 };
